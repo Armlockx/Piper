@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Heart, MessageCircle } from "lucide-react";
+import { Bookmark, Heart, MessageCircle, Repeat2 } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { BotBadge } from "@/components/bots/BotBadge";
 import { PostContent } from "@/components/feed/PostContent";
@@ -23,13 +23,16 @@ export function PostCard({ post, currentUserId, onLike, showReply = true }: Post
   const [likeCount, setLikeCount] = useState(post.like_count);
   const [liking, setLiking] = useState(false);
   const [burst, setBurst] = useState(false);
+  const [bookmarked, setBookmarked] = useState(post.bookmarked_by_me ?? false);
+  const [reposted, setReposted] = useState(post.reposted_by_me ?? false);
+  const [repostCount, setRepostCount] = useState(post.repost_count ?? 0);
 
   const isBot = post.author_type === "bot";
   const handle = isBot ? post.bots?.handle : post.profiles?.handle;
   const displayName = isBot ? post.bots?.name : post.profiles?.display_name;
   const avatar = isBot ? post.bots?.avatar_url : post.profiles?.avatar_url;
   const accent = isBot ? post.bots?.accent_color : undefined;
-  const profileHref = isBot ? `/profile/${handle}` : `/profile/${handle}`;
+  const profileHref = `/profile/${handle}`;
 
   async function toggleLike() {
     if (!currentUserId || !onLike || liking) return;
@@ -46,6 +49,36 @@ export function PostCard({ post, currentUserId, onLike, showReply = true }: Post
     } finally {
       setLiking(false);
       setTimeout(() => setBurst(false), 400);
+    }
+  }
+
+  async function toggleBookmark() {
+    if (!currentUserId) return;
+    const next = !bookmarked;
+    setBookmarked(next);
+    try {
+      const res = await fetch(`/api/posts/${post.id}/bookmark`, { method: "POST" });
+      if (!res.ok) throw new Error("fail");
+      const data = await res.json();
+      setBookmarked(data.bookmarked);
+    } catch {
+      setBookmarked(!next);
+    }
+  }
+
+  async function toggleRepost() {
+    if (!currentUserId) return;
+    const next = !reposted;
+    setReposted(next);
+    setRepostCount((c) => c + (next ? 1 : -1));
+    try {
+      const res = await fetch(`/api/posts/${post.id}/repost`, { method: "POST" });
+      if (!res.ok) throw new Error("fail");
+      const data = await res.json();
+      setReposted(data.reposted);
+    } catch {
+      setReposted(!next);
+      setRepostCount((c) => c + (next ? -1 : 1));
     }
   }
 
@@ -74,7 +107,7 @@ export function PostCard({ post, currentUserId, onLike, showReply = true }: Post
               <PostContent content={post.content} />
             </p>
           </div>
-          <div className="mt-3 flex items-center gap-6">
+          <div className="mt-3 flex items-center gap-5">
             {showReply && (
               <Link
                 href={`/post/${post.root_post_id ?? post.id}`}
@@ -99,6 +132,27 @@ export function PostCard({ post, currentUserId, onLike, showReply = true }: Post
                   className="pointer-events-none absolute -left-1 -top-1 h-6 w-6 rounded-full border border-neon-magenta"
                 />
               )}
+            </button>
+            <button
+              type="button"
+              onClick={toggleRepost}
+              disabled={!currentUserId}
+              className={`flex items-center gap-1.5 font-mono text-xs hover:text-neon-amber disabled:cursor-default ${
+                reposted ? "text-neon-amber" : "text-white/40"
+              }`}
+            >
+              <Repeat2 size={14} />
+              {repostCount || ""}
+            </button>
+            <button
+              type="button"
+              onClick={toggleBookmark}
+              disabled={!currentUserId}
+              className={`flex items-center gap-1.5 font-mono text-xs hover:text-neon-cyan disabled:cursor-default ${
+                bookmarked ? "text-neon-cyan" : "text-white/40"
+              }`}
+            >
+              <Bookmark size={14} className={bookmarked ? "fill-neon-cyan" : ""} />
             </button>
           </div>
         </div>

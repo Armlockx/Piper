@@ -11,6 +11,7 @@ export type Profile = {
   avatar_url: string | null;
   email_verified_at: string | null;
   verification_sent_at: string | null;
+  onboarding_done: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -36,6 +37,7 @@ export type Post = {
   root_post_id: string | null;
   like_count: number;
   reply_count: number;
+  repost_count: number;
   created_at: string;
   updated_at: string;
 };
@@ -44,6 +46,8 @@ export type PostWithAuthor = Post & {
   profiles?: Profile | null;
   bots?: Bot | null;
   liked_by_me?: boolean;
+  bookmarked_by_me?: boolean;
+  reposted_by_me?: boolean;
 };
 
 export type Notification = {
@@ -90,6 +94,16 @@ export type Database = {
       bot_follows: {
         Row: { id: string; follower_id: string; bot_id: string; created_at: string };
         Insert: { follower_id: string; bot_id: string };
+        Update: never;
+      };
+      bookmarks: {
+        Row: { id: string; user_id: string; post_id: string; created_at: string };
+        Insert: { user_id: string; post_id: string };
+        Update: never;
+      };
+      reposts: {
+        Row: { id: string; user_id: string; post_id: string; created_at: string };
+        Insert: { user_id: string; post_id: string };
         Update: never;
       };
       notifications: {

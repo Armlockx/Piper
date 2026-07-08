@@ -120,17 +120,34 @@ async function enrichWithLikes(posts: PostWithAuthor[]): Promise<PostWithAuthor[
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return posts.map((p) => ({ ...p, liked_by_me: false }));
+  if (!user) {
+    return posts.map((p) => ({
+      ...p,
+      liked_by_me: false,
+      bookmarked_by_me: false,
+      reposted_by_me: false,
+      repost_count: p.repost_count ?? 0,
+    }));
+  }
 
   const ids = posts.map((p) => p.id);
-  const { data: likes } = await supabase
-    .from("post_likes")
-    .select("post_id")
-    .eq("user_id", user.id)
-    .in("post_id", ids);
+  const [likesRes, bookmarksRes, repostsRes] = await Promise.all([
+    supabase.from("post_likes").select("post_id").eq("user_id", user.id).in("post_id", ids),
+    supabase.from("bookmarks").select("post_id").eq("user_id", user.id).in("post_id", ids),
+    supabase.from("reposts").select("post_id").eq("user_id", user.id).in("post_id", ids),
+  ]);
 
-  const likedSet = new Set((likes ?? []).map((l) => l.post_id));
-  return posts.map((p) => ({ ...p, liked_by_me: likedSet.has(p.id) }));
+  const likedSet = new Set((likesRes.data ?? []).map((l) => l.post_id));
+  const bookmarkedSet = new Set((bookmarksRes.data ?? []).map((b) => b.post_id));
+  const repostedSet = new Set((repostsRes.data ?? []).map((r) => r.post_id));
+
+  return posts.map((p) => ({
+    ...p,
+    liked_by_me: likedSet.has(p.id),
+    bookmarked_by_me: bookmarkedSet.has(p.id),
+    reposted_by_me: repostedSet.has(p.id),
+    repost_count: p.repost_count ?? 0,
+  }));
 }
 
 export async function getBots() {

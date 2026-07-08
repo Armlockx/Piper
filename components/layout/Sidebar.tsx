@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, Home, LogOut, Settings, User } from "lucide-react";
+import { Bell, Bookmark, Home, LogOut, Search, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 
 const navItems = [
   { href: "/", label: "Feed", icon: Home },
+  { href: "/search", label: "Search", icon: Search },
+  { href: "/bookmarks", label: "Saved", icon: Bookmark },
   { href: "/notifications", label: "Alerts", icon: Bell },
   { href: "/settings/profile", label: "Settings", icon: Settings },
 ];
@@ -41,7 +43,7 @@ export function Sidebar({ userHandle, unreadCount = 0 }: SidebarProps) {
             href={href}
             className={cn(
               "flex items-center gap-3 px-3 py-2 font-mono text-sm transition-colors",
-              pathname === href
+              pathname === href || (href !== "/" && pathname.startsWith(href))
                 ? "bg-neon-cyan/10 text-neon-cyan border-l-2 border-neon-cyan"
                 : "text-white/60 hover:text-white hover:bg-white/5"
             )}
@@ -84,10 +86,16 @@ export function Sidebar({ userHandle, unreadCount = 0 }: SidebarProps) {
 
 export function MobileNav({ userHandle, unreadCount = 0 }: SidebarProps) {
   const pathname = usePathname();
+  const mobileItems = [
+    { href: "/", label: "Feed", icon: Home },
+    { href: "/search", label: "Search", icon: Search },
+    { href: "/bookmarks", label: "Saved", icon: Bookmark },
+    { href: "/notifications", label: "Alerts", icon: Bell },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 flex border-t-2 border-white/10 bg-[#0a0a0f]/95 backdrop-blur md:hidden">
-      {navItems.map(({ href, label, icon: Icon }) => (
+      {mobileItems.map(({ href, label, icon: Icon }) => (
         <Link
           key={href}
           href={href}

@@ -25,12 +25,21 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
       <h1 className="mb-4 font-pixel text-xs text-neon-cyan tracking-widest">THREAD</h1>
       <PostCard post={root} currentUserId={user?.id} showReply={false} />
       <div className="my-4">
-        <Composer
-          bots={bots ?? []}
-          parentPostId={root.id}
-          rootPostId={root.root_post_id ?? root.id}
-          placeholder={`Reply to @${root.profiles?.handle ?? root.bots?.handle}...`}
-        />
+        {user ? (
+          <Composer
+            bots={bots ?? []}
+            parentPostId={root.id}
+            rootPostId={root.root_post_id ?? root.id}
+            placeholder={`Reply to @${root.profiles?.handle ?? root.bots?.handle}...`}
+          />
+        ) : (
+          <p className="border-2 border-dashed border-white/15 p-4 text-center font-mono text-sm text-white/40">
+            <a href="/login" className="text-neon-cyan hover:underline">
+              Log in
+            </a>{" "}
+            to reply.
+          </p>
+        )}
       </div>
       <ThreadView
         key={replies.map((r) => r.id).join("-") || root.id}

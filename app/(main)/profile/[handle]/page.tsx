@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { BotBadge } from "@/components/bots/BotBadge";
@@ -67,11 +68,16 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
               </p>
             )}
             <p className="mt-2 font-mono text-xs text-white/30">
-              {followerCount} follower{followerCount === 1 ? "" : "s"}
+              <Link href={`/profile/${handle}/followers`} className="hover:text-neon-cyan">
+                {followerCount} follower{followerCount === 1 ? "" : "s"}
+              </Link>
               {userProfile && (
                 <>
                   {" "}
-                  · {followingCount} following
+                  ·{" "}
+                  <Link href={`/profile/${handle}/following`} className="hover:text-neon-cyan">
+                    {followingCount} following
+                  </Link>
                 </>
               )}
             </p>
