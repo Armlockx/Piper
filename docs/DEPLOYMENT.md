@@ -18,10 +18,15 @@ Or create the repo manually on GitHub and push.
 ## 2. Supabase production
 
 1. Use the same project created in [SETUP.md](SETUP.md) or a dedicated prod project
-2. Apply `supabase/migrations/001_piper_init.sql`
-3. Auth → URL Configuration:
+2. Apply all migrations under `supabase/migrations/` (through `005_email_verification.sql`)
+3. Auth → Providers → Email:
+   - **Confirm email = OFF** (required for optional verification)
+4. Auth → URL Configuration:
    - Site URL: `https://YOUR_VERCEL_DOMAIN.vercel.app`
-   - Redirect URLs: `https://YOUR_VERCEL_DOMAIN.vercel.app/**`
+   - Redirect URLs:
+     - `https://YOUR_VERCEL_DOMAIN.vercel.app/**`
+     - `https://YOUR_VERCEL_DOMAIN.vercel.app/auth/verify`
+5. Optional: Auth → SMTP Settings — custom SMTP for reliable verification emails (Supabase built-in email has rate limits)
 
 ## 3. Vercel
 
@@ -41,7 +46,8 @@ Or create the repo manually on GitHub and push.
 
 ## 4. Post-deploy smoke test
 
-- [ ] Sign up on production URL
+- [ ] Sign up on production URL (enters feed without confirming email)
+- [ ] Optional verification email arrives; click link → verified badge
 - [ ] Post a tweet
 - [ ] @mention `@piper` and confirm bot reply within ~10s
 - [ ] Like a post, follow a user, check notifications

@@ -27,6 +27,8 @@ erDiagram
 | display_name | text | |
 | bio | text | optional |
 | avatar_url | text | optional |
+| email_verified_at | timestamptz | optional badge source (migration 005) |
+| verification_sent_at | timestamptz | rate-limit for resend |
 
 ### bots
 

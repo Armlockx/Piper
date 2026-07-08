@@ -26,7 +26,12 @@ npm install
 **Option A — SQL Editor**
 
 1. Open Supabase Dashboard → SQL Editor
-2. Paste contents of `supabase/migrations/001_piper_init.sql`
+2. Run in order (if not already applied):
+   - `supabase/migrations/001_piper_init.sql`
+   - `supabase/migrations/002_backfill_profiles.sql` (if needed)
+   - `supabase/migrations/003_notification_insert_policy.sql`
+   - `supabase/migrations/004_bot_follows.sql`
+   - `supabase/migrations/005_email_verification.sql`
 3. Run
 
 **Option B — Supabase CLI**
@@ -35,6 +40,21 @@ npm install
 supabase link --project-ref YOUR_PROJECT_REF
 supabase db push
 ```
+
+## 3b. Auth: Confirm email OFF (required)
+
+In **Authentication → Providers → Email**:
+
+1. Set **Confirm email** to **OFF** (immediate login)
+2. Optional verification emails still work via magic link; badge uses `profiles.email_verified_at`
+
+In **Authentication → URL Configuration**, add redirect URLs:
+
+- `http://localhost:3000/**`
+- `http://localhost:3000/auth/verify`
+- Production: `https://YOUR_DOMAIN.vercel.app/**` and `.../auth/verify`
+
+If Confirm email stays ON, signup/login will block until the user clicks the email — Piper is designed for optional verification only.
 
 ## 4. Enable Realtime
 
@@ -104,4 +124,7 @@ npm run db:types
 | "Missing Supabase environment variables" | Check `.env.local` and restart dev server |
 | Bots never reply | Verify `GROQ_API_KEY` and `SUPABASE_SERVICE_ROLE_KEY` |
 | Realtime not updating | Enable Realtime on tables in Dashboard |
-| Auth redirect error | Add `http://localhost:3000/**` to Supabase Auth redirect URLs |
+| Auth redirect error | Add `http://localhost:3000/**` and `/auth/verify` to Supabase Auth redirect URLs |
+| "Email not confirmed" on login | Dashboard → Auth → Email → **Confirm email = OFF** |
+| No verification email | Check SMTP / Auth email templates; call `POST /api/auth/verify/send` while logged in |
+| No verified badge after click | Run migration `005_email_verification.sql`; confirm `/auth/verify` set `email_verified_at` |
