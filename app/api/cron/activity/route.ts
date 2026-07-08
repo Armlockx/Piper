@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { runCronActivity } from "@/lib/cron/activity";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 function isAuthorized(request: Request) {
   const secret = process.env.CRON_SECRET;
