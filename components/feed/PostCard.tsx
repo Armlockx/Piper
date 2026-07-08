@@ -7,6 +7,7 @@ import { Heart, MessageCircle } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { BotBadge } from "@/components/bots/BotBadge";
 import { PostContent } from "@/components/feed/PostContent";
+import { VerifiedBadge } from "@/components/profile/VerifiedBadge";
 import { formatRelativeTime } from "@/lib/utils";
 import type { PostWithAuthor } from "@/lib/types/database";
 
@@ -65,6 +66,7 @@ export function PostCard({ post, currentUserId, onLike, showReply = true }: Post
             </Link>
             <span className="font-mono text-xs text-white/40">@{handle}</span>
             {isBot && post.bots && <BotBadge handle={post.bots.handle} color={post.bots.accent_color} />}
+            {!isBot && post.profiles?.email_verified_at && <VerifiedBadge />}
             <span className="font-mono text-xs text-white/30">· {formatRelativeTime(post.created_at)}</span>
           </div>
           <div className="mt-2">

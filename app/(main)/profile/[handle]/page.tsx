@@ -3,6 +3,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { BotBadge } from "@/components/bots/BotBadge";
 import { FeedList } from "@/components/feed/FeedList";
 import { FollowButton } from "@/components/profile/FollowButton";
+import { VerifiedBadge } from "@/components/profile/VerifiedBadge";
 import { getUserPosts } from "@/lib/posts/queries";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -11,6 +12,7 @@ import {
   isFollowing,
   resolveFollowTarget,
 } from "@/lib/follows/queries";
+import { isEmailVerified } from "@/lib/profiles/isVerified";
 import type { Bot, Profile } from "@/lib/types/database";
 
 export default async function ProfilePage({ params }: { params: Promise<{ handle: string }> }) {
@@ -56,6 +58,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
                 {isBot ? bot?.name : userProfile?.display_name}
               </h1>
               {bot && <BotBadge handle={bot.handle} color={bot.accent_color} />}
+              {userProfile && isEmailVerified(userProfile) && <VerifiedBadge />}
             </div>
             <p className="font-mono text-sm text-white/40">@{handle}</p>
             {(userProfile?.bio || bot?.persona_prompt) && (
