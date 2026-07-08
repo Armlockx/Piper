@@ -23,7 +23,10 @@ export default function LoginPage() {
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
     if (authError) {
-      setError(authError.message);
+      const msg = authError.message.toLowerCase().includes("email not confirmed")
+        ? "Email not confirmed. In Supabase Dashboard, turn OFF Authentication → Email → Confirm email so login works without confirmation. Verification is optional in Piper."
+        : authError.message;
+      setError(msg);
       setLoading(false);
       return;
     }
