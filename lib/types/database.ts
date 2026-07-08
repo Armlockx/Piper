@@ -9,6 +9,8 @@ export type Profile = {
   display_name: string;
   bio: string | null;
   avatar_url: string | null;
+  email_verified_at: string | null;
+  verification_sent_at: string | null;
   created_at: string;
   updated_at: string;
 };

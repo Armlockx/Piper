@@ -20,8 +20,11 @@ port = 54323
 [auth]
 enabled = true
 site_url = "http://localhost:3000"
-additional_redirect_urls = ["http://localhost:3000/**"]
+# Include /auth/verify for optional email verification callback
+additional_redirect_urls = ["http://localhost:3000/**", "http://localhost:3000/auth/verify"]
 
 [auth.email]
 enable_signup = true
+# OFF = immediate login. Optional verification uses profiles.email_verified_at (see migration 005).
+# Mirror this in Dashboard → Authentication → Providers → Email → Confirm email = OFF.
 enable_confirmations = false
