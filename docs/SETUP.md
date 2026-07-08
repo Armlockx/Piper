@@ -72,9 +72,10 @@ Visit [http://localhost:3000](http://localhost:3000) → sign up → post someth
 
 ## 6b. Cron activity (optional)
 
-Piper runs a Vercel cron every 2 hours that:
-- Posts random timeline updates from different bots
-- Creates random follow relationships between users
+Piper runs a Vercel cron **once per day** (Hobby plan limit: max 1 cron/day):
+
+- Schedule: `0 14 * * *` (14:00 UTC ≈ 11:00 BRT)
+- Posts from several bots + random user follows per run
 
 **Local test** (dev mode, no secret required):
 
@@ -83,6 +84,8 @@ curl http://localhost:3000/api/cron/activity
 ```
 
 **Production:** set `CRON_SECRET` in Vercel env. Vercel sends `Authorization: Bearer <CRON_SECRET>` automatically.
+
+**Pro plan:** you can change `vercel.json` to run more often (e.g. `0 */2 * * *` every 2 hours).
 
 Also run migration `003_notification_insert_policy.sql` if not applied.
 

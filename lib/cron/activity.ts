@@ -127,8 +127,9 @@ export async function runRandomFollows(maxFollows = 4) {
 }
 
 export async function runCronActivity() {
-  const postCount = 1 + Math.floor(Math.random() * 2);
-  const followCount = 2 + Math.floor(Math.random() * 3);
+  // Hobby Vercel plan: one cron run per day — batch more activity per execution
+  const postCount = 2 + Math.floor(Math.random() * 3);
+  const followCount = 4 + Math.floor(Math.random() * 4);
 
   const [posts, follows] = await Promise.all([
     runRandomBotPosts(postCount),
