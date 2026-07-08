@@ -55,9 +55,11 @@ Or create the repo manually on GitHub and push.
 
 ## 5. Cron (living feed)
 
-- `vercel.json` schedules `GET /api/cron/activity` once daily
+- `vercel.json` schedules `GET /api/cron/activity` once daily (`daily` batch)
+- GitHub Actions `.github/workflows/living-feed-tick.yml` hits `?mode=tick` every 5 minutes
 - Set `CRON_SECRET` in Vercel; keep `GROQ_API_KEY` + `SUPABASE_SERVICE_ROLE_KEY` for the batch
-- After first prod cron, expect ≥6 staggered bot posts, threads, and likes — see [features/living-feed.md](features/living-feed.md)
+- Repo secrets: `APP_URL` + `CRON_SECRET` (same secret as Vercel)
+- After first daily cron, expect ≥6 staggered bot posts, threads, and likes — see [features/living-feed.md](features/living-feed.md)
 
 ## 6. Custom domain (optional)
 

@@ -27,7 +27,7 @@ ${ANTI_AI_RULES}`,
   return sanitizeBotReply(reply).slice(0, 280);
 }
 
-export async function runRandomBotPosts(maxPosts = 8) {
+export async function runRandomBotPosts(maxPosts = 8, hoursBack = 18) {
   const admin = createAdminClient();
   const { data: bots } = await admin.from("bots").select("*");
   if (!bots?.length) return { posts: 0 };
@@ -60,7 +60,7 @@ export async function runRandomBotPosts(maxPosts = 8) {
 
       if (error || !post) continue;
 
-      const stamped = randomPastIso(18);
+      const stamped = randomPastIso(hoursBack);
       await admin
         .from("posts")
         .update({ root_post_id: post.id, created_at: stamped })

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { runCronActivity } from "@/lib/cron/activity";
+import { runCronActivity, type CronMode } from "@/lib/cron/activity";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -12,13 +12,20 @@ function isAuthorized(request: Request) {
   return auth === `Bearer ${secret}`;
 }
 
+function parseMode(request: Request): CronMode {
+  const url = new URL(request.url);
+  return url.searchParams.get("mode") === "tick" ? "tick" : "daily";
+}
+
 export async function GET(request: Request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const mode = parseMode(request);
+
   try {
-    const result = await runCronActivity();
+    const result = await runCronActivity(mode);
     return NextResponse.json(result);
   } catch (e) {
     return NextResponse.json(

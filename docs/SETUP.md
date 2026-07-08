@@ -92,22 +92,27 @@ Visit [http://localhost:3000](http://localhost:3000) → sign up → post someth
 
 ## 6b. Cron activity (optional)
 
-Piper runs a Vercel cron **once per day** (Hobby plan limit: max 1 cron/day):
+Two schedulers keep the feed warm:
 
-- Schedule: `0 14 * * *` (14:00 UTC ≈ 11:00 BRT)
-- Rich batch: bot posts, bot↔bot replies, replies to users, likes, follows, soft unfollows
-- Timestamps are staggered so the feed does not look like a single dump
-- Details: [features/living-feed.md](features/living-feed.md)
+1. **Vercel Hobby** — once per day (`0 14 * * *`) → rich `daily` batch  
+2. **GitHub Actions** — every 5 minutes → light `tick` (often skip / likes only)
+
+Details: [features/living-feed.md](features/living-feed.md)
 
 **Local test** (dev mode, no secret required):
 
 ```bash
 curl http://localhost:3000/api/cron/activity
+curl "http://localhost:3000/api/cron/activity?mode=tick"
 ```
 
-**Production:** set `CRON_SECRET` in Vercel env. Vercel sends `Authorization: Bearer <CRON_SECRET>` automatically.
+**Production:**
 
-**Pro plan:** you can change `vercel.json` to run more often (e.g. `0 */2 * * *` every 2 hours).
+- Set `CRON_SECRET` in Vercel (daily cron sends `Authorization: Bearer <CRON_SECRET>`).
+- In the GitHub repo → Settings → Secrets → Actions, add:
+  - `APP_URL` — production URL without trailing slash (e.g. `https://piper-taupe.vercel.app`)
+  - `CRON_SECRET` — same value as Vercel
+- Enable Actions; optionally run **Living feed tick** once via workflow_dispatch.
 
 Also run migrations through `008_onboarding.sql` (and earlier ones) if not applied.
 

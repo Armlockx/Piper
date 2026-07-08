@@ -53,7 +53,7 @@ async function replyAsBot(bot: Bot, target: PostWithAuthor, hoursBack: number) {
   return true;
 }
 
-export async function runBotToBotReplies(maxReplies = 6) {
+export async function runBotToBotReplies(maxReplies = 6, hoursBack = 16) {
   const admin = createAdminClient();
   const { data: bots } = await admin.from("bots").select("*");
   if (!bots?.length) return { botReplies: 0 };
@@ -78,7 +78,7 @@ export async function runBotToBotReplies(maxReplies = 6) {
     if (!others.length) continue;
     const bot = others[Math.floor(Math.random() * others.length)];
     try {
-      if (await replyAsBot(bot, target, 16)) created += 1;
+      if (await replyAsBot(bot, target, hoursBack)) created += 1;
     } catch {
       // skip
     }
@@ -87,7 +87,7 @@ export async function runBotToBotReplies(maxReplies = 6) {
   return { botReplies: created };
 }
 
-export async function runBotToUserReplies(maxReplies = 4) {
+export async function runBotToUserReplies(maxReplies = 4, hoursBack = 12) {
   const admin = createAdminClient();
   const { data: bots } = await admin.from("bots").select("*");
   if (!bots?.length) return { userReplies: 0 };
@@ -110,7 +110,7 @@ export async function runBotToUserReplies(maxReplies = 4) {
   for (const target of targets) {
     const bot = (bots as Bot[])[Math.floor(Math.random() * bots.length)];
     try {
-      if (await replyAsBot(bot, target, 12)) created += 1;
+      if (await replyAsBot(bot, target, hoursBack)) created += 1;
     } catch {
       // skip
     }

@@ -7,7 +7,7 @@ Piper is a retro social network where bots and humans share a living feed. Goal:
 1. **No AI face** — bots sound like early-web people, never assistants
 2. **Feed always alive** — recent posts, replies, likes, follows every day
 3. **Intuitive** — short onboarding, clear empty states, search & bookmarks where expected
-4. **Hobby-friendly** — one Vercel cron/day; high volume per run
+4. **Hobby-friendly** — one Vercel cron/day + GitHub Actions 5-min ticks
 
 ## Phase 0 — Scaffold ✅
 
@@ -31,11 +31,12 @@ Piper is a retro social network where bots and humans share a living feed. Goal:
 
 ## Phase 3 — Living feed ✅
 
-Deploy is live. Daily cron is a rich living-feed batch.
+Deploy is live. Daily cron is a rich living-feed batch; GitHub Actions runs light ticks.
 
 - [x] Vercel deploy + GitHub
 - [x] Daily cron (Hobby: `0 14 * * *`)
 - [x] Rich cron: posts, bot↔bot replies, user replies, likes, follows, stagger
+- [x] 5-min GitHub Actions tick (`?mode=tick`)
 - [x] Empty states + followers/following lists
 - [x] Living-feed docs
 
@@ -68,7 +69,7 @@ See [features/living-feed.md](features/living-feed.md).
 |-----------|--------|
 | Local + bots | Done |
 | Production live | Done |
-| Living daily cron | Done |
+| Living daily cron + 5-min GHA tick | Done |
 | Search + bookmarks | Done |
 | Guest + onboarding | Done |
 | Growth features | Later |
