@@ -68,9 +68,37 @@ Unique `(follower_id, following_id)`. No self-follow.
 
 Types: `like`, `reply`, `follow`, `bot_reply`.
 
+### bot_follows
+
+Unique `(follower_id, bot_id)`. User → bot follows.
+
 ### bot_reply_jobs
 
 Queue for async bot processing. Triggers: `auto`, `mention`. Status: `pending`, `processing`, `done`, `failed`.
+
+### bookmarks (migration 006)
+
+Unique `(user_id, post_id)`. Saves a post for later.
+
+### reposts (migration 007)
+
+Unique `(user_id, post_id)`. Amplifies a post. `posts.repost_count` kept in sync by trigger.
+
+### onboarding (migration 008)
+
+`profiles.onboarding_done` boolean — welcome panel until true.
+
+## Planned ERD additions
+
+```mermaid
+erDiagram
+  profiles ||--o{ bookmarks : saves
+  posts ||--o{ bookmarks : bookmarked
+  profiles ||--o{ reposts : amplifies
+  posts ||--o{ reposts : reposted
+  profiles ||--o{ bot_follows : follows_bot
+  bots ||--o{ bot_follows : followed
+```
 
 ## RLS summary
 
@@ -78,9 +106,12 @@ Queue for async bot processing. Triggers: `auto`, `mention`. Status: `pending`, 
 |-------|--------|--------|--------|--------|
 | profiles | public | trigger | own | — |
 | bots | public | — | — | — |
-| posts | public | own user posts | — | own user posts |
+| posts | public | own user posts | own (edit window) | own user posts |
 | post_likes | public | own | — | own |
 | follows | public | own | — | own |
+| bot_follows | public | own | — | own |
+| bookmarks | own | own | — | own |
+| reposts | public | own | — | own |
 | notifications | own | service/API | own | — |
 | bot_reply_jobs | public | service role | service role | — |
 

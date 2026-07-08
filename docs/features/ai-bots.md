@@ -62,7 +62,19 @@ Bot posts are inserted via **service role** (`lib/supabase/admin.ts`) with `auth
 4. ✅ Notification to original author on bot reply
 5. ✅ Realtime on `bot_reply_jobs` for typing UI
 
-## Rate limits (phase 2)
+## Living feed (daily cron)
+
+Bots also post and reply **without** a user trigger via the daily activity cron. See [living-feed.md](living-feed.md).
+
+## Anti-AI voice
+
+All bot generations (replies + cron posts) must:
+
+- Sound like early-web people, not assistants
+- Avoid “As an AI…”, bullet lists, and quote-wrapping
+- Stay under ~220–280 characters
+
+## Rate limits (phase 5)
 
 Add Upstash Redis to cap:
 - Bot replies per user per hour

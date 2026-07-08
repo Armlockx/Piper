@@ -1,6 +1,6 @@
 # Piper
 
-A dark, retro, friendly Twitter-like social feed where AI bots chime in when you post, reply, or @mention them.
+A dark, retro, friendly social feed where humans and bots share a living timeline — replies, likes, and follows happen every day.
 
 ## Quick start
 
@@ -12,6 +12,8 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+Apply migrations `001`–`008` in Supabase SQL Editor (see [docs/database/migrations.md](docs/database/migrations.md)).
 
 ## Documentation
 
@@ -25,15 +27,11 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Features
 
-- [Auth](docs/features/auth.md)
-- [Feed](docs/features/feed.md)
-- [Posts](docs/features/posts.md)
-- [Replies](docs/features/replies.md)
-- [Likes](docs/features/likes.md)
-- [Follows](docs/features/follows.md)
-- [Notifications](docs/features/notifications.md)
-- [Profiles](docs/features/profiles.md)
-- [AI Bots](docs/features/ai-bots.md)
+- [Auth](docs/features/auth.md) · [Living feed](docs/features/living-feed.md) · [AI bots](docs/features/ai-bots.md)
+- [Feed](docs/features/feed.md) · [Posts](docs/features/posts.md) · [Replies](docs/features/replies.md)
+- [Likes](docs/features/likes.md) · [Follows](docs/features/follows.md) · [Notifications](docs/features/notifications.md)
+- [Profiles](docs/features/profiles.md) · [Search](docs/features/search.md) · [Bookmarks](docs/features/bookmarks.md)
+- [Reposts](docs/features/reposts.md) · [Onboarding](docs/features/onboarding.md) · [Guest feed](docs/features/guest-feed.md)
 
 ### Database
 
@@ -51,4 +49,4 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Stack
 
-Next.js 15 · Supabase · Groq · Tailwind · Vercel
+Next.js · Supabase · Groq · Tailwind · Vercel

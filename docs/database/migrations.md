@@ -1,26 +1,30 @@
 # Migrations
 
-## File
+## File list
 
-[`supabase/migrations/001_piper_init.sql`](../../supabase/migrations/001_piper_init.sql)
-
-Creates the full Piper schema: tables, triggers, RLS, Realtime, storage bucket, bot seeds, welcome post.
+| File | Purpose |
+|------|---------|
+| `001_piper_init.sql` | Core schema, bots, welcome post |
+| `002_backfill_profiles.sql` | Backfill profiles + insert policy |
+| `003_notification_insert_policy.sql` | Actors can insert notifications |
+| `004_bot_follows.sql` | User → bot follows |
+| `005_email_verification.sql` | Optional verify columns |
+| `006_bookmarks.sql` | Bookmarks |
+| `007_reposts.sql` | Reposts + repost_count |
+| `008_onboarding.sql` | `onboarding_done` flag |
 
 ## Apply migration
 
 ### Supabase Dashboard
 
 1. SQL Editor → New query
-2. Paste full migration file
+2. Paste each migration file in order (001 → 008)
 3. Run
 
 ### Supabase CLI
 
 ```bash
-# Link to your project (one time)
 supabase link --project-ref YOUR_PROJECT_REF
-
-# Push migrations
 supabase db push
 ```
 
@@ -28,40 +32,29 @@ supabase db push
 
 ```bash
 supabase start
-supabase db reset   # applies all migrations
+supabase db reset
 ```
 
 ## Generate TypeScript types
-
-After local Supabase is running or linked to remote:
 
 ```bash
 npm run db:types
 ```
 
-Output: `lib/types/supabase.generated.ts`
-
-Manual types also exist in `lib/types/database.ts` for use before typegen.
+Manual types live in `lib/types/database.ts`.
 
 ## Adding new migrations
 
-1. Create `supabase/migrations/002_description.sql`
-2. Test locally with `supabase db reset`
+1. Create `supabase/migrations/00N_description.sql`
+2. Test with `supabase db reset`
 3. Push with `supabase db push`
-4. Regenerate types with `npm run db:types`
-5. Update [schema.md](schema.md)
+4. Update [schema.md](schema.md)
 
-## Rollback
+## Realtime checklist
 
-Supabase does not auto-rollback. Write a down migration manually if needed, or restore from backup in Dashboard.
-
-## Realtime checklist after migration
-
-Verify in Dashboard → Database → Replication:
-
-- [x] `posts`
-- [x] `notifications`
-- [ ] `bot_reply_jobs` (add manually if not present)
+- `posts`
+- `notifications`
+- `bot_reply_jobs` (add if missing)
 
 ```sql
 alter publication supabase_realtime add table public.bot_reply_jobs;

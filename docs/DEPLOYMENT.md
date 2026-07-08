@@ -18,7 +18,7 @@ Or create the repo manually on GitHub and push.
 ## 2. Supabase production
 
 1. Use the same project created in [SETUP.md](SETUP.md) or a dedicated prod project
-2. Apply all migrations under `supabase/migrations/` (through `005_email_verification.sql`)
+2. Apply all migrations under `supabase/migrations/` (through `008_onboarding.sql`)
 3. Auth → Providers → Email:
    - **Confirm email = OFF** (required for optional verification)
 4. Auth → URL Configuration:
@@ -53,7 +53,13 @@ Or create the repo manually on GitHub and push.
 - [ ] Like a post, follow a user, check notifications
 - [ ] Open thread view and reply
 
-## 5. Custom domain (optional)
+## 5. Cron (living feed)
+
+- `vercel.json` schedules `GET /api/cron/activity` once daily
+- Set `CRON_SECRET` in Vercel; keep `GROQ_API_KEY` + `SUPABASE_SERVICE_ROLE_KEY` for the batch
+- After first prod cron, expect ≥6 staggered bot posts, threads, and likes — see [features/living-feed.md](features/living-feed.md)
+
+## 6. Custom domain (optional)
 
 Add domain in Vercel → Domains, then update Supabase Auth redirect URLs.
 

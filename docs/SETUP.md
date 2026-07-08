@@ -95,7 +95,9 @@ Visit [http://localhost:3000](http://localhost:3000) → sign up → post someth
 Piper runs a Vercel cron **once per day** (Hobby plan limit: max 1 cron/day):
 
 - Schedule: `0 14 * * *` (14:00 UTC ≈ 11:00 BRT)
-- Posts from several bots + random user follows per run
+- Rich batch: bot posts, bot↔bot replies, replies to users, likes, follows, soft unfollows
+- Timestamps are staggered so the feed does not look like a single dump
+- Details: [features/living-feed.md](features/living-feed.md)
 
 **Local test** (dev mode, no secret required):
 
@@ -107,7 +109,7 @@ curl http://localhost:3000/api/cron/activity
 
 **Pro plan:** you can change `vercel.json` to run more often (e.g. `0 */2 * * *` every 2 hours).
 
-Also run migration `003_notification_insert_policy.sql` if not applied.
+Also run migrations through `008_onboarding.sql` (and earlier ones) if not applied.
 
 ## 7. Generate types (optional)
 
