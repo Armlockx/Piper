@@ -3,9 +3,9 @@ import { buildBotPrompt } from "@/lib/groq/buildBotPrompt";
 import { runGroqChatCompletion } from "@/lib/groq/client";
 import { sanitizeBotReply } from "@/lib/groq/sanitizeReply";
 import type { Bot, PostWithAuthor } from "@/lib/types/database";
-import { pickRandom, randomPastIso } from "@/lib/cron/topics";
+import { pickRandom } from "@/lib/cron/topics";
 
-async function replyAsBot(bot: Bot, target: PostWithAuthor, hoursBack: number) {
+async function replyAsBotNow(bot: Bot, target: PostWithAuthor) {
   const admin = createAdminClient();
   const rootId = target.root_post_id ?? target.id;
 
@@ -17,7 +17,6 @@ async function replyAsBot(bot: Bot, target: PostWithAuthor, hoursBack: number) {
     .limit(12);
 
   const messages = buildBotPrompt(bot, target, (threadPosts ?? []) as PostWithAuthor[]);
-  // Strengthen anti-AI in system by appending via first message already in buildBotPrompt
   const { reply } = await runGroqChatCompletion(messages, "default");
   const content = sanitizeBotReply(reply).slice(0, 280);
   if (!content) return false;
@@ -36,11 +35,6 @@ async function replyAsBot(bot: Bot, target: PostWithAuthor, hoursBack: number) {
 
   if (error || !botPost) return false;
 
-  await admin
-    .from("posts")
-    .update({ created_at: randomPastIso(hoursBack) })
-    .eq("id", botPost.id);
-
   if (target.author_id) {
     await admin.from("notifications").insert({
       user_id: target.author_id,
@@ -53,10 +47,11 @@ async function replyAsBot(bot: Bot, target: PostWithAuthor, hoursBack: number) {
   return true;
 }
 
-export async function runBotToBotReplies(maxReplies = 6, hoursBack = 16) {
+/** Pick a fresh bot top-level post and reply as another bot (now). */
+export async function createBotToBotReplyNow(preferBotId?: string): Promise<boolean> {
   const admin = createAdminClient();
   const { data: bots } = await admin.from("bots").select("*").eq("active", true);
-  if (!bots?.length) return { botReplies: 0 };
+  if (!bots?.length) return false;
 
   const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
   const { data: posts } = await admin
@@ -68,29 +63,30 @@ export async function runBotToBotReplies(maxReplies = 6, hoursBack = 16) {
     .order("created_at", { ascending: false })
     .limit(40);
 
-  if (!posts?.length) return { botReplies: 0 };
+  if (!posts?.length) return false;
 
-  let created = 0;
-  const targets = pickRandom(posts as PostWithAuthor[], Math.min(maxReplies, posts.length));
+  const target = (posts as PostWithAuthor[])[Math.floor(Math.random() * posts.length)];
+  let others = (bots as Bot[]).filter((b) => b.id !== target.bot_id);
+  if (!others.length) return false;
 
-  for (const target of targets) {
-    const others = (bots as Bot[]).filter((b) => b.id !== target.bot_id);
-    if (!others.length) continue;
-    const bot = others[Math.floor(Math.random() * others.length)];
-    try {
-      if (await replyAsBot(bot, target, hoursBack)) created += 1;
-    } catch {
-      // skip
-    }
+  if (preferBotId) {
+    const preferred = others.find((b) => b.id === preferBotId);
+    if (preferred) others = [preferred];
   }
 
-  return { botReplies: created };
+  const bot = others[Math.floor(Math.random() * others.length)];
+  try {
+    return await replyAsBotNow(bot, target);
+  } catch {
+    return false;
+  }
 }
 
-export async function runBotToUserReplies(maxReplies = 4, hoursBack = 12) {
+/** Pick a fresh user top-level post and reply as a bot (now). */
+export async function createBotToUserReplyNow(preferBotId?: string): Promise<boolean> {
   const admin = createAdminClient();
   const { data: bots } = await admin.from("bots").select("*").eq("active", true);
-  if (!bots?.length) return { userReplies: 0 };
+  if (!bots?.length) return false;
 
   const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
   const { data: posts } = await admin
@@ -102,19 +98,35 @@ export async function runBotToUserReplies(maxReplies = 4, hoursBack = 12) {
     .order("created_at", { ascending: false })
     .limit(30);
 
-  if (!posts?.length) return { userReplies: 0 };
+  if (!posts?.length) return false;
 
-  let created = 0;
-  const targets = pickRandom(posts as PostWithAuthor[], Math.min(maxReplies, posts.length));
+  const target = (posts as PostWithAuthor[])[Math.floor(Math.random() * posts.length)];
+  const pool = bots as Bot[];
+  const bot = preferBotId
+    ? pool.find((b) => b.id === preferBotId) ?? pool[Math.floor(Math.random() * pool.length)]
+    : pool[Math.floor(Math.random() * pool.length)];
 
-  for (const target of targets) {
-    const bot = (bots as Bot[])[Math.floor(Math.random() * bots.length)];
-    try {
-      if (await replyAsBot(bot, target, hoursBack)) created += 1;
-    } catch {
-      // skip
-    }
+  try {
+    return await replyAsBotNow(bot, target);
+  } catch {
+    return false;
   }
+}
 
+/** @deprecated Prefer scheduling + create*Now helpers. */
+export async function runBotToBotReplies(maxReplies = 6, _hoursBack = 16) {
+  let created = 0;
+  for (let i = 0; i < maxReplies; i++) {
+    if (await createBotToBotReplyNow()) created += 1;
+  }
+  return { botReplies: created };
+}
+
+/** @deprecated Prefer scheduling + create*Now helpers. */
+export async function runBotToUserReplies(maxReplies = 4, _hoursBack = 12) {
+  let created = 0;
+  for (let i = 0; i < maxReplies; i++) {
+    if (await createBotToUserReplyNow()) created += 1;
+  }
   return { userReplies: created };
 }

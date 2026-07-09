@@ -2,7 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { runGroqChatCompletion } from "@/lib/groq/client";
 import { sanitizeBotReply } from "@/lib/groq/sanitizeReply";
 import type { Bot } from "@/lib/types/database";
-import { ANTI_AI_RULES, POST_TOPICS, pickRandom, randomPastIso, randInt } from "@/lib/cron/topics";
+import { ANTI_AI_RULES, POST_TOPICS, pickRandom, randInt } from "@/lib/cron/topics";
 
 async function generateBotPost(bot: Bot): Promise<string> {
   const topic = POST_TOPICS[Math.floor(Math.random() * POST_TOPICS.length)];
@@ -27,51 +27,53 @@ ${ANTI_AI_RULES}`,
   return sanitizeBotReply(reply).slice(0, 280);
 }
 
-export async function runRandomBotPosts(maxPosts = 8, hoursBack = 18) {
+/** Publish one bot post now (created_at = now). */
+export async function createBotPostNow(botId?: string): Promise<boolean> {
   const admin = createAdminClient();
-  const { data: bots } = await admin.from("bots").select("*").eq("active", true);
-  if (!bots?.length) return { posts: 0 };
+  let bot: Bot | null = null;
 
-  // Allow same bot more than once if we need volume
-  const pool = bots as Bot[];
-  const chosen: Bot[] = [];
-  for (let i = 0; i < maxPosts; i++) {
-    chosen.push(pool[Math.floor(Math.random() * pool.length)]);
+  if (botId) {
+    const { data } = await admin.from("bots").select("*").eq("id", botId).eq("active", true).maybeSingle();
+    bot = data as Bot | null;
+  } else {
+    const { data: bots } = await admin.from("bots").select("*").eq("active", true);
+    if (!bots?.length) return false;
+    bot = (bots as Bot[])[Math.floor(Math.random() * bots.length)];
   }
 
+  if (!bot) return false;
+
+  try {
+    const content = await generateBotPost(bot);
+    if (!content) return false;
+
+    const { data: post, error } = await admin
+      .from("posts")
+      .insert({
+        content,
+        author_type: "bot",
+        bot_id: bot.id,
+        parent_post_id: null,
+        root_post_id: null,
+      })
+      .select("id")
+      .single();
+
+    if (error || !post) return false;
+
+    await admin.from("posts").update({ root_post_id: post.id }).eq("id", post.id);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** @deprecated Prefer scheduling + createBotPostNow. Kept for rare manual bursts. */
+export async function runRandomBotPosts(maxPosts = 8, _hoursBack = 18) {
   let created = 0;
-
-  for (const bot of chosen) {
-    try {
-      const content = await generateBotPost(bot);
-      if (!content) continue;
-
-      const { data: post, error } = await admin
-        .from("posts")
-        .insert({
-          content,
-          author_type: "bot",
-          bot_id: bot.id,
-          parent_post_id: null,
-          root_post_id: null,
-        })
-        .select("id")
-        .single();
-
-      if (error || !post) continue;
-
-      const stamped = randomPastIso(hoursBack);
-      await admin
-        .from("posts")
-        .update({ root_post_id: post.id, created_at: stamped })
-        .eq("id", post.id);
-
-      created += 1;
-    } catch {
-      // skip
-    }
+  for (let i = 0; i < maxPosts; i++) {
+    if (await createBotPostNow()) created += 1;
   }
-
   return { posts: created };
 }
 

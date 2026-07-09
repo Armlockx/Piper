@@ -13,8 +13,10 @@ Grow the cast slowly: a small random number of new bots appear each day via cron
 
 | Mode | Behavior |
 |------|----------|
-| `tick` | `spawnBotIfDue()` — P = 0.035 × (1 + hours/24) × (1 − spawned/cap) |
-| `daily` | `spawnBotBatch(2–4)` guaranteed (within remaining cap) |
+| `daily` | Plans `spawn_bot` actions (2–4) into `scheduled_actions` with future `execute_at` |
+| `tick` | Executes due `spawn_bot` rows via `spawnBotBatch(1)` (along with other due actions) |
+
+Legacy helper `spawnBotIfDue()` remains for manual/probabilistic use but the living-feed path uses the queue.
 
 Personas from Groq (`lib/cron/generateBot.ts`); avatar = inline SVG data URL.
 

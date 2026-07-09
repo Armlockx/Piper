@@ -129,6 +129,40 @@ export type BotSpawnDaily = {
   last_spawn_at: string | null;
 };
 
+export type ScheduledActionType =
+  | "bot_post"
+  | "bot_reply_bot"
+  | "bot_reply_user"
+  | "organic_like"
+  | "user_follow"
+  | "bot_follow"
+  | "soft_unfollow"
+  | "spawn_bot";
+
+export type ScheduledActionStatus =
+  | "pending"
+  | "processing"
+  | "done"
+  | "failed"
+  | "cancelled";
+
+export type ScheduledAction = {
+  id: string;
+  action_type: ScheduledActionType;
+  payload: Record<string, unknown>;
+  execute_at: string;
+  status: ScheduledActionStatus;
+  error: string | null;
+  created_at: string;
+  processed_at: string | null;
+};
+
+export type CronPlanDaily = {
+  date: string;
+  planned_count: number;
+  created_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -194,6 +228,16 @@ export type Database = {
         Row: BotSpawnDaily;
         Insert: Partial<BotSpawnDaily>;
         Update: Partial<BotSpawnDaily>;
+      };
+      scheduled_actions: {
+        Row: ScheduledAction;
+        Insert: Partial<ScheduledAction>;
+        Update: Partial<ScheduledAction>;
+      };
+      cron_plan_daily: {
+        Row: CronPlanDaily;
+        Insert: Partial<CronPlanDaily>;
+        Update: Partial<CronPlanDaily>;
       };
     };
   };

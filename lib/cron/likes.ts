@@ -1,15 +1,12 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { pickRandom } from "@/lib/cron/topics";
 
-/**
- * Organic likes: use real user profiles as likers (FK requires profiles.id).
- * Bots cannot like via post_likes without a profile row.
- */
-export async function runOrganicLikes(maxLikes = 20) {
+/** One organic like now. */
+export async function createOrganicLikeNow(): Promise<boolean> {
   const admin = createAdminClient();
 
   const { data: profiles } = await admin.from("profiles").select("id").limit(80);
-  if (!profiles?.length) return { likes: 0 };
+  if (!profiles?.length) return false;
 
   const since = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
   const { data: posts } = await admin
@@ -20,12 +17,9 @@ export async function runOrganicLikes(maxLikes = 20) {
     .order("created_at", { ascending: false })
     .limit(50);
 
-  if (!posts?.length) return { likes: 0 };
+  if (!posts?.length) return false;
 
-  let created = 0;
-  const attempts = maxLikes * 3;
-
-  for (let i = 0; i < attempts && created < maxLikes; i++) {
+  for (let i = 0; i < 8; i++) {
     const post = posts[Math.floor(Math.random() * posts.length)];
     const liker = profiles[Math.floor(Math.random() * profiles.length)];
     if (post.author_id && post.author_id === liker.id) continue;
@@ -55,9 +49,21 @@ export async function runOrganicLikes(maxLikes = 20) {
       });
     }
 
-    created += 1;
+    return true;
   }
 
+  return false;
+}
+
+/**
+ * Organic likes: use real user profiles as likers (FK requires profiles.id).
+ * @deprecated Prefer scheduling + createOrganicLikeNow.
+ */
+export async function runOrganicLikes(maxLikes = 20) {
+  let created = 0;
+  for (let i = 0; i < maxLikes; i++) {
+    if (await createOrganicLikeNow()) created += 1;
+  }
   return { likes: created };
 }
 

@@ -38,6 +38,7 @@ npm install
    - `supabase/migrations/009_realtime_fixes.sql`
    - `supabase/migrations/010_chat.sql`
    - `supabase/migrations/011_dynamic_bots.sql`
+   - `supabase/migrations/012_scheduled_actions.sql`
 3. Run
 
 **Option B — Supabase CLI**
