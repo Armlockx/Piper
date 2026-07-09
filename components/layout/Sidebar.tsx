@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, Bookmark, Home, LogOut, Search, Settings, User } from "lucide-react";
+import { Bell, Bookmark, Home, LogOut, MessageCircle, Search, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import { useEffect, useState } from "react";
+import { useUnreadNotificationCount } from "@/components/layout/NotificationCountProvider";
 
 const navItems = [
   { href: "/", label: "Feed", icon: Home },
+  { href: "/messages", label: "Chat", icon: MessageCircle },
   { href: "/search", label: "Search", icon: Search },
   { href: "/bookmarks", label: "Saved", icon: Bookmark },
   { href: "/notifications", label: "Alerts", icon: Bell },
@@ -20,9 +21,10 @@ type SidebarProps = {
   unreadCount?: number;
 };
 
-export function Sidebar({ userHandle, unreadCount = 0 }: SidebarProps) {
+export function Sidebar({ userHandle }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { count: badge } = useUnreadNotificationCount();
 
   async function logout() {
     const supabase = createClient();
@@ -50,8 +52,8 @@ export function Sidebar({ userHandle, unreadCount = 0 }: SidebarProps) {
           >
             <Icon size={16} />
             {label}
-            {href === "/notifications" && unreadCount > 0 && (
-              <span className="ml-auto bg-neon-magenta px-1.5 font-pixel text-[8px]">{unreadCount}</span>
+            {href === "/notifications" && badge > 0 && (
+              <span className="ml-auto bg-neon-magenta px-1.5 font-pixel text-[8px]">{badge}</span>
             )}
           </Link>
         ))}
@@ -84,12 +86,14 @@ export function Sidebar({ userHandle, unreadCount = 0 }: SidebarProps) {
   );
 }
 
-export function MobileNav({ userHandle, unreadCount = 0 }: SidebarProps) {
+export function MobileNav({ userHandle }: SidebarProps) {
   const pathname = usePathname();
+  const { count: badge } = useUnreadNotificationCount();
+
   const mobileItems = [
     { href: "/", label: "Feed", icon: Home },
+    { href: "/messages", label: "Chat", icon: MessageCircle },
     { href: "/search", label: "Search", icon: Search },
-    { href: "/bookmarks", label: "Saved", icon: Bookmark },
     { href: "/notifications", label: "Alerts", icon: Bell },
   ];
 
@@ -101,12 +105,14 @@ export function MobileNav({ userHandle, unreadCount = 0 }: SidebarProps) {
           href={href}
           className={cn(
             "relative flex flex-1 flex-col items-center gap-1 py-3 font-mono text-[10px]",
-            pathname === href ? "text-neon-cyan" : "text-white/40"
+            pathname === href || (href !== "/" && pathname.startsWith(href))
+              ? "text-neon-cyan"
+              : "text-white/40"
           )}
         >
           <Icon size={18} />
           {label}
-          {href === "/notifications" && unreadCount > 0 && (
+          {href === "/notifications" && badge > 0 && (
             <span className="absolute right-1/4 top-2 h-2 w-2 rounded-full bg-neon-magenta" />
           )}
         </Link>
@@ -125,35 +131,4 @@ export function MobileNav({ userHandle, unreadCount = 0 }: SidebarProps) {
       )}
     </nav>
   );
-}
-
-export function NotificationBell({ userId }: { userId?: string | null }) {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    if (!userId) return;
-    const supabase = createClient();
-
-    supabase
-      .from("notifications")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("read", false)
-      .then(({ count: c }) => setCount(c ?? 0));
-
-    const channel = supabase
-      .channel("notif-count")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
-        () => setCount((c) => c + 1)
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userId]);
-
-  return count;
 }

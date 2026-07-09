@@ -8,6 +8,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { BotBadge } from "@/components/bots/BotBadge";
 import { PostContent } from "@/components/feed/PostContent";
 import { VerifiedBadge } from "@/components/profile/VerifiedBadge";
+import { usePostCounters } from "@/lib/realtime/usePostCounters";
 import { formatRelativeTime } from "@/lib/utils";
 import type { PostWithAuthor } from "@/lib/types/database";
 
@@ -20,12 +21,22 @@ type PostCardProps = {
 
 export function PostCard({ post, currentUserId, onLike, showReply = true }: PostCardProps) {
   const [liked, setLiked] = useState(post.liked_by_me ?? false);
-  const [likeCount, setLikeCount] = useState(post.like_count);
   const [liking, setLiking] = useState(false);
   const [burst, setBurst] = useState(false);
   const [bookmarked, setBookmarked] = useState(post.bookmarked_by_me ?? false);
   const [reposted, setReposted] = useState(post.reposted_by_me ?? false);
-  const [repostCount, setRepostCount] = useState(post.repost_count ?? 0);
+
+  const {
+    likeCount,
+    setLikeCount,
+    replyCount,
+    repostCount,
+    setRepostCount,
+  } = usePostCounters(post.id, {
+    like_count: post.like_count,
+    reply_count: post.reply_count,
+    repost_count: post.repost_count ?? 0,
+  });
 
   const isBot = post.author_type === "bot";
   const handle = isBot ? post.bots?.handle : post.profiles?.handle;
@@ -114,7 +125,7 @@ export function PostCard({ post, currentUserId, onLike, showReply = true }: Post
                 className="flex items-center gap-1.5 font-mono text-xs text-white/40 hover:text-neon-cyan"
               >
                 <MessageCircle size={14} />
-                {post.reply_count || ""}
+                {replyCount || ""}
               </Link>
             )}
             <button

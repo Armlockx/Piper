@@ -1,0 +1,51 @@
+---
+description: Conventional Commits + commitlint rules for Piper
+alwaysApply: true
+---
+
+# Commit messages
+
+Piper enforces [Conventional Commits](https://www.conventionalcommits.org/) via Husky + Commitlint. Full human docs: [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## When creating a git commit
+
+1. Use format: `<type>(<optional-scope>): <description>`
+2. Description: **lower-case**, imperative mood, **no** trailing period
+3. Header ≤ 100 chars; body lines ≤ 100 chars
+4. Prefer one logical change per commit
+5. Pass the message via HEREDOC (never `-i` interactive git)
+
+### Allowed types
+
+`feat` · `fix` · `docs` · `style` · `refactor` · `perf` · `test` · `build` · `ci` · `chore` · `revert`
+
+### Allowed scopes (optional)
+
+`auth` · `bots` · `chat` · `cron` · `db` · `feed` · `realtime` · `ui` · `api` · `deps` · `release`
+
+If you need a new scope, update `commitlint.config.mjs` and `CONTRIBUTING.md` in the same change.
+
+### Good
+
+```text
+feat(chat): add floating mini-dock for bot conversations
+fix(realtime): uniquify channel names to avoid subscribe collision
+docs: add contributing guide for conventional commits
+```
+
+### Bad
+
+```text
+Update stuff
+Fixed bug.
+feat(Chat): Add Mini Dock.
+feat(messages): new inbox
+```
+
+(`messages` is not an allowed scope — use `chat`.)
+
+## Do not
+
+- Skip hooks (`--no-verify`) unless the user explicitly asks
+- Commit `.env.local` or secrets
+- Invent commit types outside the enum

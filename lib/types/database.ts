@@ -24,6 +24,10 @@ export type Bot = {
   avatar_url: string;
   accent_color: string;
   auto_reply_weight: number;
+  is_generated?: boolean;
+  archetype?: string | null;
+  spawn_batch_id?: string | null;
+  active?: boolean;
   created_at: string;
 };
 
@@ -68,11 +72,61 @@ export type BotReplyJob = {
   id: string;
   post_id: string;
   bot_id: string;
+  root_post_id: string | null;
   trigger: BotTrigger;
   status: BotJobStatus;
   error: string | null;
   created_at: string;
   processed_at: string | null;
+};
+
+export type Conversation = {
+  id: string;
+  user_id: string;
+  bot_id: string;
+  last_message_at: string | null;
+  created_at: string;
+  bots?: Bot | null;
+};
+
+export type ChatSenderType = "user" | "bot";
+
+export type ChatMessage = {
+  id: string;
+  conversation_id: string;
+  sender_type: ChatSenderType;
+  sender_user_id: string | null;
+  sender_bot_id: string | null;
+  content: string;
+  created_at: string;
+  profiles?: Profile | null;
+  bots?: Bot | null;
+};
+
+export type BotConversationState = {
+  conversation_id: string;
+  mood: string;
+  mood_intensity: number;
+  summary: string | null;
+  updated_at: string;
+};
+
+export type ChatReplyJob = {
+  id: string;
+  conversation_id: string;
+  message_id: string;
+  bot_id: string;
+  status: BotJobStatus;
+  error: string | null;
+  created_at: string;
+  processed_at: string | null;
+};
+
+export type BotSpawnDaily = {
+  date: string;
+  spawned_count: number;
+  daily_cap: number;
+  last_spawn_at: string | null;
 };
 
 export type Database = {
@@ -115,6 +169,31 @@ export type Database = {
         Row: BotReplyJob;
         Insert: Partial<BotReplyJob>;
         Update: Partial<BotReplyJob>;
+      };
+      conversations: {
+        Row: Conversation;
+        Insert: Partial<Conversation>;
+        Update: Partial<Conversation>;
+      };
+      chat_messages: {
+        Row: ChatMessage;
+        Insert: Partial<ChatMessage>;
+        Update: Partial<ChatMessage>;
+      };
+      bot_conversation_state: {
+        Row: BotConversationState;
+        Insert: Partial<BotConversationState>;
+        Update: Partial<BotConversationState>;
+      };
+      chat_reply_jobs: {
+        Row: ChatReplyJob;
+        Insert: Partial<ChatReplyJob>;
+        Update: Partial<ChatReplyJob>;
+      };
+      bot_spawn_daily: {
+        Row: BotSpawnDaily;
+        Insert: Partial<BotSpawnDaily>;
+        Update: Partial<BotSpawnDaily>;
       };
     };
   };

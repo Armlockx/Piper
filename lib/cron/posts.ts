@@ -29,7 +29,7 @@ ${ANTI_AI_RULES}`,
 
 export async function runRandomBotPosts(maxPosts = 8, hoursBack = 18) {
   const admin = createAdminClient();
-  const { data: bots } = await admin.from("bots").select("*");
+  const { data: bots } = await admin.from("bots").select("*").eq("active", true);
   if (!bots?.length) return { posts: 0 };
 
   // Allow same bot more than once if we need volume

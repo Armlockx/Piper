@@ -32,6 +32,12 @@ npm install
    - `supabase/migrations/003_notification_insert_policy.sql`
    - `supabase/migrations/004_bot_follows.sql`
    - `supabase/migrations/005_email_verification.sql`
+   - `supabase/migrations/006_bookmarks.sql`
+   - `supabase/migrations/007_reposts.sql`
+   - `supabase/migrations/008_onboarding.sql`
+   - `supabase/migrations/009_realtime_fixes.sql`
+   - `supabase/migrations/010_chat.sql`
+   - `supabase/migrations/011_dynamic_bots.sql`
 3. Run
 
 **Option B — Supabase CLI**

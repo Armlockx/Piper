@@ -48,7 +48,7 @@ export async function runUserToBotFollows(maxFollows = 3) {
   const admin = createAdminClient();
   const [{ data: profiles }, { data: bots }] = await Promise.all([
     admin.from("profiles").select("id").limit(100),
-    admin.from("bots").select("id"),
+    admin.from("bots").select("id").eq("active", true),
   ]);
 
   if (!profiles?.length || !bots?.length) return { botFollows: 0 };

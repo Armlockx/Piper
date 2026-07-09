@@ -12,13 +12,17 @@ type AvatarProps = {
 export function Avatar({ src, alt, size = "md", accent, className }: AvatarProps) {
   const sizes = { sm: 32, md: 40, lg: 64 };
   const px = sizes[size];
+  const isDataUrl = src?.startsWith("data:") ?? false;
 
   return (
     <div
       className={cn("relative shrink-0 border-2 bg-black/60", className)}
       style={{ borderColor: accent ?? "rgba(255,255,255,0.2)", width: px, height: px }}
     >
-      {src ? (
+      {src && isDataUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element -- data: SVG avatars for generated bots
+        <img src={src} alt={alt} width={px} height={px} className="object-cover" />
+      ) : src ? (
         <Image src={src} alt={alt} width={px} height={px} className="object-cover" />
       ) : (
         <div

@@ -20,7 +20,7 @@ export default async function NotificationsPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
       <h1 className="mb-6 font-pixel text-xs text-neon-amber tracking-widest">ALERTS</h1>
-      <NotificationList initial={data ?? []} />
+      <NotificationList initial={data ?? []} userId={user.id} />
     </div>
   );
 }

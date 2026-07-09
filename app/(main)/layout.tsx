@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Sidebar, MobileNav } from "@/components/layout/Sidebar";
+import { NotificationCountProvider } from "@/components/layout/NotificationCountProvider";
+import { ChatMiniDock } from "@/components/chat/ChatMiniDock";
 import { getCurrentProfile, getUnreadNotificationCount } from "@/lib/posts/queries";
 import { ensureProfile } from "@/lib/profiles/ensureProfile";
 
@@ -55,10 +57,13 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   const unread = await getUnreadNotificationCount(user.id);
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar userHandle={profile?.handle} unreadCount={unread} />
-      <main className="flex-1 pb-20 md:pb-0">{children}</main>
-      <MobileNav userHandle={profile?.handle} unreadCount={unread} />
-    </div>
+    <NotificationCountProvider userId={user.id} initialCount={unread}>
+      <div className="flex min-h-screen">
+        <Sidebar userHandle={profile?.handle} unreadCount={unread} />
+        <main className="flex-1 pb-20 md:pb-0">{children}</main>
+        <MobileNav userHandle={profile?.handle} unreadCount={unread} />
+        <ChatMiniDock />
+      </div>
+    </NotificationCountProvider>
   );
 }

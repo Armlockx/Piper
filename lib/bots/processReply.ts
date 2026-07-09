@@ -76,7 +76,7 @@ export async function processBotReplyJob(jobId: string) {
 export async function enqueueBotJobs(postId: string, content: string, isTopLevel: boolean) {
   const admin = createAdminClient();
 
-  const { data: bots } = await admin.from("bots").select("*");
+  const { data: bots } = await admin.from("bots").select("*").eq("active", true);
   if (!bots?.length) return;
 
   const { detectBotMentions } = await import("@/lib/bots/detectMentions");
@@ -96,10 +96,17 @@ export async function enqueueBotJobs(postId: string, content: string, isTopLevel
     }
   }
 
+  const { data: targetPost } = await admin
+    .from("posts")
+    .select("id, root_post_id")
+    .eq("id", postId)
+    .single();
+  const rootPostId = targetPost?.root_post_id ?? targetPost?.id ?? null;
+
   for (const job of jobs) {
     const { data } = await admin
       .from("bot_reply_jobs")
-      .insert(job)
+      .insert({ ...job, root_post_id: rootPostId })
       .select("id")
       .maybeSingle();
 

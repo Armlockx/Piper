@@ -53,9 +53,9 @@ export function Composer({
 
       setContent("");
       onSuccess?.();
+      // Thread replies still need a soft refresh so the root reply_count SSR stays in sync;
+      // top-level posts land via FeedList Realtime without a full refresh.
       if (parentPostId) {
-        router.refresh();
-      } else {
         router.refresh();
       }
     } catch (e) {

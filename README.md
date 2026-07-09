@@ -19,6 +19,7 @@ Apply migrations `001`–`008` in Supabase SQL Editor (see [docs/database/migrat
 
 | Doc | Description |
 |-----|-------------|
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Commits, PRs, Conventional Commits |
 | [docs/README.md](docs/README.md) | Documentation index |
 | [docs/STACK.md](docs/STACK.md) | Tech stack and folder map |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Phased delivery plan |

@@ -60,8 +60,9 @@ See [features/living-feed.md](features/living-feed.md).
 - [ ] Report / soft moderation
 - [ ] Upstash rate limit on Groq
 - [ ] Hot / trending tab
-- [ ] Extra bot personas (only if feed stays natural)
-- [ ] DMs — out of near-term scope
+- [x] Realtime polish — shared hooks, live alerts, following filter ([features/realtime.md](features/realtime.md))
+- [x] User↔bot chat + mini dock ([features/chat.md](features/chat.md))
+- [x] Dynamic bot spawn via cron ([features/dynamic-bots.md](features/dynamic-bots.md))
 
 ## Milestones
 

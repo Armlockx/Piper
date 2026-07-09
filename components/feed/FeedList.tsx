@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 import { PostCard } from "@/components/feed/PostCard";
+import { useFeedRealtime } from "@/lib/realtime/useFeedRealtime";
 import type { PostWithAuthor } from "@/lib/types/database";
 
 type FeedListProps = {
@@ -14,37 +14,15 @@ type FeedListProps = {
 
 export function FeedList({ initialPosts, currentUserId, feedType = "global" }: FeedListProps) {
   const [posts, setPosts] = useState(initialPosts);
-  const [freshPulse, setFreshPulse] = useState(false);
 
-  useEffect(() => {
-    const supabase = createClient();
-    const channel = supabase
-      .channel(`feed-${feedType}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "posts" },
-        async (payload) => {
-          const { data } = await supabase
-            .from("posts")
-            .select("*, profiles(*), bots(*)")
-            .eq("id", payload.new.id as string)
-            .single();
-          if (data && !data.parent_post_id) {
-            setPosts((prev) => {
-              if (prev.some((p) => p.id === data.id)) return prev;
-              return [{ ...data, liked_by_me: false } as PostWithAuthor, ...prev];
-            });
-            setFreshPulse(true);
-            setTimeout(() => setFreshPulse(false), 2000);
-          }
-        }
-      )
-      .subscribe();
+  const onNewPost = useCallback((post: PostWithAuthor) => {
+    setPosts((prev) => {
+      if (prev.some((p) => p.id === post.id)) return prev;
+      return [post, ...prev];
+    });
+  }, []);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [feedType]);
+  const { freshPulse } = useFeedRealtime(feedType, currentUserId, onNewPost);
 
   const handleLike = useCallback(async (postId: string) => {
     const res = await fetch(`/api/posts/${postId}/like`, { method: "POST" });

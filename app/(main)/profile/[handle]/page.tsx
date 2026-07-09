@@ -4,6 +4,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { BotBadge } from "@/components/bots/BotBadge";
 import { FeedList } from "@/components/feed/FeedList";
 import { FollowButton } from "@/components/profile/FollowButton";
+import { MessageBotButton } from "@/components/chat/MessageBotButton";
 import { VerifiedBadge } from "@/components/profile/VerifiedBadge";
 import { getUserPosts } from "@/lib/posts/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -82,13 +83,18 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
               )}
             </p>
           </div>
-          {showFollowButton && (
-            <FollowButton
-              handle={handle}
-              initialFollowing={following}
-              targetType={target?.type}
-            />
-          )}
+          <div className="flex flex-col gap-2">
+            {showFollowButton && (
+              <FollowButton
+                handle={handle}
+                initialFollowing={following}
+                targetType={target?.type}
+              />
+            )}
+            {user && bot && bot.active !== false && (
+              <MessageBotButton botHandle={bot.handle} />
+            )}
+          </div>
         </div>
       </div>
       <div className="mt-4">

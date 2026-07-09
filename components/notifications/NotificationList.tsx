@@ -2,15 +2,24 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { useUnreadNotificationCount } from "@/components/layout/NotificationCountProvider";
+import { useNotificationList } from "@/lib/realtime/useNotificationRealtime";
 import { formatRelativeTime } from "@/lib/utils";
 import type { Notification } from "@/lib/types/database";
 
-export function NotificationList({ initial }: { initial: Notification[] }) {
-  const items = initial;
+export function NotificationList({
+  initial,
+  userId,
+}: {
+  initial: Notification[];
+  userId?: string | null;
+}) {
+  const { items } = useNotificationList(userId, initial);
+  const { markAllRead } = useUnreadNotificationCount();
 
   useEffect(() => {
-    fetch("/api/notifications", { method: "PATCH" });
-  }, []);
+    void fetch("/api/notifications", { method: "PATCH" }).then(() => markAllRead());
+  }, [markAllRead]);
 
   function label(n: Notification) {
     const actor = n.actor?.display_name ?? n.bot?.name ?? "Someone";

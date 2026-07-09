@@ -6,6 +6,7 @@ import {
   runSoftUnfollows,
   runUserToBotFollows,
 } from "@/lib/cron/follows";
+import { spawnBotBatch, spawnBotIfDue } from "@/lib/cron/spawnBots";
 import { randInt } from "@/lib/cron/topics";
 
 export type CronMode = "daily" | "tick";
@@ -18,6 +19,7 @@ const emptyCounters = {
   follows: 0,
   botFollows: 0,
   unfollows: 0,
+  botsSpawned: 0,
 };
 
 /**
@@ -26,8 +28,12 @@ const emptyCounters = {
  *
  * Rough daily from ticks alone (if schedule is reliable):
  * ~12 posts, ~9 bot replies, ~6 user replies, likes often, few follows.
+ * Plus probabilistic new-bot spawns toward the daily cap.
  */
 export async function runCronTick() {
+  // Always attempt spawn roll (cheap when skipped); independent of activity roll
+  const spawn = await spawnBotIfDue();
+
   const roll = Math.random();
 
   if (roll < 0.04) {
@@ -38,6 +44,7 @@ export async function runCronTick() {
       skipped: false,
       ...emptyCounters,
       posts: posts.posts,
+      botsSpawned: spawn.botsSpawned,
       at: new Date().toISOString(),
     };
   }
@@ -50,6 +57,7 @@ export async function runCronTick() {
       skipped: false,
       ...emptyCounters,
       botReplies: botReplies.botReplies,
+      botsSpawned: spawn.botsSpawned,
       at: new Date().toISOString(),
     };
   }
@@ -62,6 +70,7 @@ export async function runCronTick() {
       skipped: false,
       ...emptyCounters,
       userReplies: userReplies.userReplies,
+      botsSpawned: spawn.botsSpawned,
       at: new Date().toISOString(),
     };
   }
@@ -75,6 +84,7 @@ export async function runCronTick() {
         skipped: false,
         ...emptyCounters,
         follows: follows.follows,
+        botsSpawned: spawn.botsSpawned,
         at: new Date().toISOString(),
       };
     }
@@ -85,6 +95,7 @@ export async function runCronTick() {
       skipped: false,
       ...emptyCounters,
       botFollows: botFollows.botFollows,
+      botsSpawned: spawn.botsSpawned,
       at: new Date().toISOString(),
     };
   }
@@ -97,6 +108,7 @@ export async function runCronTick() {
       skipped: false,
       ...emptyCounters,
       likes: likes.likes,
+      botsSpawned: spawn.botsSpawned,
       at: new Date().toISOString(),
     };
   }
@@ -104,8 +116,9 @@ export async function runCronTick() {
   return {
     ok: true,
     mode: "tick" as const,
-    skipped: true,
+    skipped: spawn.botsSpawned === 0,
     ...emptyCounters,
+    botsSpawned: spawn.botsSpawned,
     at: new Date().toISOString(),
   };
 }
@@ -120,6 +133,7 @@ export async function runCronDaily() {
   const botFollowCount = randInt(2, 4);
   const unfollowCount = Math.random() < 0.5 ? randInt(0, 2) : 0;
 
+  const spawn = await spawnBotBatch(randInt(2, 4));
   const posts = await runRandomBotPosts(postCount);
   const botReplies = await runBotToBotReplies(botReplyCount);
   const userReplies = await runBotToUserReplies(userReplyCount);
@@ -139,6 +153,7 @@ export async function runCronDaily() {
     follows: follows.follows,
     botFollows: botFollows.botFollows,
     unfollows: unfollows.unfollows,
+    botsSpawned: spawn.botsSpawned,
     at: new Date().toISOString(),
   };
 }

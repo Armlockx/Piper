@@ -55,7 +55,7 @@ async function replyAsBot(bot: Bot, target: PostWithAuthor, hoursBack: number) {
 
 export async function runBotToBotReplies(maxReplies = 6, hoursBack = 16) {
   const admin = createAdminClient();
-  const { data: bots } = await admin.from("bots").select("*");
+  const { data: bots } = await admin.from("bots").select("*").eq("active", true);
   if (!bots?.length) return { botReplies: 0 };
 
   const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
@@ -89,7 +89,7 @@ export async function runBotToBotReplies(maxReplies = 6, hoursBack = 16) {
 
 export async function runBotToUserReplies(maxReplies = 4, hoursBack = 12) {
   const admin = createAdminClient();
-  const { data: bots } = await admin.from("bots").select("*");
+  const { data: bots } = await admin.from("bots").select("*").eq("active", true);
   if (!bots?.length) return { userReplies: 0 };
 
   const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
