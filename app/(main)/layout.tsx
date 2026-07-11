@@ -5,6 +5,7 @@ import { NotificationCountProvider } from "@/components/layout/NotificationCount
 import { ChatMiniDock } from "@/components/chat/ChatMiniDock";
 import { getCurrentProfile, getUnreadNotificationCount } from "@/lib/posts/queries";
 import { ensureProfile } from "@/lib/profiles/ensureProfile";
+import { getAdminSession } from "@/lib/auth/isAdmin";
 
 export const dynamic = "force-dynamic";
 
@@ -55,13 +56,14 @@ export default async function MainLayout({ children }: { children: React.ReactNo
 
   const profile = (await getCurrentProfile()) ?? (await ensureProfile(user));
   const unread = await getUnreadNotificationCount(user.id);
+  const { isAdmin } = await getAdminSession();
 
   return (
     <NotificationCountProvider userId={user.id} initialCount={unread}>
       <div className="flex min-h-screen">
-        <Sidebar userHandle={profile?.handle} unreadCount={unread} />
+        <Sidebar userHandle={profile?.handle} unreadCount={unread} isAdmin={isAdmin} />
         <main className="flex-1 pb-20 md:pb-0">{children}</main>
-        <MobileNav userHandle={profile?.handle} unreadCount={unread} />
+        <MobileNav userHandle={profile?.handle} unreadCount={unread} isAdmin={isAdmin} />
         <ChatMiniDock />
       </div>
     </NotificationCountProvider>

@@ -1,5 +1,6 @@
 import { planDay } from "@/lib/cron/schedulePlan";
 import { processDueActions } from "@/lib/cron/processDue";
+import { getCronSettings } from "@/lib/cron/config";
 
 export type CronMode = "daily" | "tick";
 
@@ -15,11 +16,27 @@ const emptyCounters = {
 };
 
 /**
- * Light tick: process 1–2 due scheduled actions (real publish time = now).
- * Spawn is planned in the daily queue as `spawn_bot` — no separate roll.
+ * Light tick: process due scheduled actions (real publish time = now).
  */
 export async function runCronTick() {
-  const result = await processDueActions(2);
+  const settings = await getCronSettings();
+
+  if (!settings.enabled) {
+    return {
+      ok: true,
+      mode: "tick" as const,
+      skipped: true,
+      disabled: true as const,
+      planned: 0,
+      dueProcessed: 0,
+      failed: 0,
+      nextExecuteAt: null,
+      ...emptyCounters,
+      at: new Date().toISOString(),
+    };
+  }
+
+  const result = await processDueActions(settings.tick_batch_size);
   const skipped = result.dueProcessed === 0 && result.failed === 0;
 
   return {
@@ -30,6 +47,7 @@ export async function runCronTick() {
     dueProcessed: result.dueProcessed,
     failed: result.failed,
     nextExecuteAt: result.nextExecuteAt,
+    tickBatchSize: settings.tick_batch_size,
     ...emptyCounters,
     posts: result.posts,
     botReplies: result.botReplies,
@@ -45,7 +63,6 @@ export async function runCronTick() {
 
 /**
  * Daily planner: enqueue organic actions with future execute_at.
- * Does not publish posts/likes immediately.
  */
 export async function runCronDaily() {
   const plan = await planDay();
@@ -59,6 +76,7 @@ export async function runCronDaily() {
     planned_count: plan.planned_count,
     date: plan.date,
     nextExecuteAt: plan.nextExecuteAt,
+    disabled: "disabled" in plan ? plan.disabled : undefined,
     quotas: "quotas" in plan ? plan.quotas : undefined,
     dueProcessed: 0,
     ...emptyCounters,

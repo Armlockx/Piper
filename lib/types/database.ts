@@ -12,8 +12,42 @@ export type Profile = {
   email_verified_at: string | null;
   verification_sent_at: string | null;
   onboarding_done: boolean;
+  is_admin: boolean;
   created_at: string;
   updated_at: string;
+};
+
+export type CronSettings = {
+  id: number;
+  enabled: boolean;
+  slot_gap_min_minutes: number;
+  slot_gap_max_minutes: number;
+  planning_horizon_hours: number;
+  tick_batch_size: number;
+  awake_hour_start: number;
+  awake_hour_end: number;
+  chain_reply_chance_pct: number;
+  chain_reply_delay_min_minutes: number;
+  chain_reply_delay_max_minutes: number;
+  bot_post_min: number;
+  bot_post_max: number;
+  bot_reply_bot_min: number;
+  bot_reply_bot_max: number;
+  bot_reply_user_min: number;
+  bot_reply_user_max: number;
+  organic_like_min: number;
+  organic_like_max: number;
+  user_follow_min: number;
+  user_follow_max: number;
+  bot_follow_min: number;
+  bot_follow_max: number;
+  soft_unfollow_min: number;
+  soft_unfollow_max: number;
+  soft_unfollow_chance_pct: number;
+  spawn_bot_min: number;
+  spawn_bot_max: number;
+  updated_at: string;
+  updated_by: string | null;
 };
 
 export type Bot = {
@@ -238,6 +272,11 @@ export type Database = {
         Row: CronPlanDaily;
         Insert: Partial<CronPlanDaily>;
         Update: Partial<CronPlanDaily>;
+      };
+      cron_settings: {
+        Row: CronSettings;
+        Insert: Partial<CronSettings>;
+        Update: Partial<CronSettings>;
       };
     };
   };
