@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, Bookmark, Home, LogOut, MessageCircle, Search, Settings, User } from "lucide-react";
+import { Bell, Bookmark, Gauge, Home, LogOut, MessageCircle, Search, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useUnreadNotificationCount } from "@/components/layout/NotificationCountProvider";
@@ -19,9 +19,10 @@ const navItems = [
 type SidebarProps = {
   userHandle?: string | null;
   unreadCount?: number;
+  isAdmin?: boolean;
 };
 
-export function Sidebar({ userHandle }: SidebarProps) {
+export function Sidebar({ userHandle, isAdmin }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { count: badge } = useUnreadNotificationCount();
@@ -57,6 +58,20 @@ export function Sidebar({ userHandle }: SidebarProps) {
             )}
           </Link>
         ))}
+        {isAdmin && (
+          <Link
+            href="/admin/cron"
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 font-mono text-sm transition-colors",
+              pathname.startsWith("/admin")
+                ? "bg-neon-magenta/10 text-neon-magenta border-l-2 border-neon-magenta"
+                : "text-white/60 hover:text-white hover:bg-white/5"
+            )}
+          >
+            <Gauge size={16} />
+            Cron
+          </Link>
+        )}
         {userHandle && (
           <Link
             href={`/profile/${userHandle}`}
@@ -86,7 +101,7 @@ export function Sidebar({ userHandle }: SidebarProps) {
   );
 }
 
-export function MobileNav({ userHandle }: SidebarProps) {
+export function MobileNav({ userHandle, isAdmin }: SidebarProps) {
   const pathname = usePathname();
   const { count: badge } = useUnreadNotificationCount();
 
@@ -95,6 +110,7 @@ export function MobileNav({ userHandle }: SidebarProps) {
     { href: "/messages", label: "Chat", icon: MessageCircle },
     { href: "/search", label: "Search", icon: Search },
     { href: "/notifications", label: "Alerts", icon: Bell },
+    ...(isAdmin ? [{ href: "/admin/cron", label: "Cron", icon: Gauge }] : []),
   ];
 
   return (
