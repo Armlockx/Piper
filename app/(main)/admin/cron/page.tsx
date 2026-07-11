@@ -18,7 +18,11 @@ export default async function AdminCronPage() {
         Configure how Piper&apos;s living feed moves throughout the day — interaction counts,
         spacing from minutes to hours, and active hours.
       </p>
-      <CronSettingsForm initialSettings={settings} initialStatus={status} />
+      <CronSettingsForm
+        key={`${settings.updated_at}-${status.date}`}
+        initialSettings={settings}
+        initialStatus={status}
+      />
     </div>
   );
 }

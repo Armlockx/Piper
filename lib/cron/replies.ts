@@ -3,8 +3,6 @@ import { buildBotPrompt } from "@/lib/groq/buildBotPrompt";
 import { runGroqChatCompletion } from "@/lib/groq/client";
 import { sanitizeBotReply } from "@/lib/groq/sanitizeReply";
 import type { Bot, PostWithAuthor } from "@/lib/types/database";
-import { pickRandom } from "@/lib/cron/topics";
-
 async function replyAsBotNow(bot: Bot, target: PostWithAuthor) {
   const admin = createAdminClient();
   const rootId = target.root_post_id ?? target.id;
@@ -114,7 +112,7 @@ export async function createBotToUserReplyNow(preferBotId?: string): Promise<boo
 }
 
 /** @deprecated Prefer scheduling + create*Now helpers. */
-export async function runBotToBotReplies(maxReplies = 6, _hoursBack = 16) {
+export async function runBotToBotReplies(maxReplies = 6) {
   let created = 0;
   for (let i = 0; i < maxReplies; i++) {
     if (await createBotToBotReplyNow()) created += 1;
@@ -123,7 +121,7 @@ export async function runBotToBotReplies(maxReplies = 6, _hoursBack = 16) {
 }
 
 /** @deprecated Prefer scheduling + create*Now helpers. */
-export async function runBotToUserReplies(maxReplies = 4, _hoursBack = 12) {
+export async function runBotToUserReplies(maxReplies = 4) {
   let created = 0;
   for (let i = 0; i < maxReplies; i++) {
     if (await createBotToUserReplyNow()) created += 1;

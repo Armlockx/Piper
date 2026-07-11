@@ -69,7 +69,7 @@ export async function createBotPostNow(botId?: string): Promise<boolean> {
 }
 
 /** @deprecated Prefer scheduling + createBotPostNow. Kept for rare manual bursts. */
-export async function runRandomBotPosts(maxPosts = 8, _hoursBack = 18) {
+export async function runRandomBotPosts(maxPosts = 8) {
   let created = 0;
   for (let i = 0; i < maxPosts; i++) {
     if (await createBotPostNow()) created += 1;
