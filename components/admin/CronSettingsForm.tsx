@@ -48,8 +48,11 @@ export function CronSettingsForm({
   const [form, setForm] = useState<FormState>(initialSettings);
   const [status, setStatus] = useState(initialStatus);
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const busy = loading || Boolean(actionLoading);
 
   function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -59,6 +62,35 @@ export function CronSettingsForm({
     const num = Number(raw);
     const minKey = `${key}_${field}` as keyof FormState;
     setField(minKey, Number.isFinite(num) ? num : 0);
+  }
+
+  async function runAction(action: string, confirmText?: string) {
+    if (confirmText && !window.confirm(confirmText)) return;
+    setActionLoading(action);
+    setMessage(null);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/cron", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(typeof data.error === "string" ? data.error : "Action failed");
+      setStatus(data.status);
+      if (data.settings) setForm(data.settings);
+      if (data.timedOut) {
+        setMessage(`Timed out with ${data.remaining} pending left. Click again to continue.`);
+      } else if (data.already_planned) {
+        setMessage("Today is already planned. Reset plan first to replan.");
+      } else {
+        setMessage("Action complete.");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Action failed");
+    } finally {
+      setActionLoading(null);
+    }
   }
 
   async function save() {
@@ -125,6 +157,79 @@ export function CronSettingsForm({
             {status.estimatedDailyActions.min}–{status.estimatedDailyActions.max}
           </span>
         </p>
+      </section>
+
+      <section className="border-2 border-white/10 bg-black/30 p-4 sm:p-6">
+        <h2 className="mb-4 font-pixel text-[10px] text-neon-purple tracking-widest">OPS</h2>
+        <div className="space-y-4">
+          <div>
+            <p className="mb-2 font-mono text-[10px] text-white/40">RUN</p>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => runAction("run_due")}>
+                Run due
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={busy}
+                onClick={() =>
+                  runAction(
+                    "run_all_pending",
+                    "Run ALL pending now, ignoring scheduled times? This may take minutes and spend LLM."
+                  )
+                }
+              >
+                Run all pending
+              </Button>
+            </div>
+          </div>
+          <div>
+            <p className="mb-2 font-mono text-[10px] text-white/40">PLAN</p>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => runAction("retry_failed")}>
+                Retry failed
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={busy}
+                onClick={() => runAction("reset_plan", "Delete today's plan so you can replan?")}
+              >
+                Reset plan
+              </Button>
+              <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => runAction("replan")}>
+                Replan today
+              </Button>
+            </div>
+          </div>
+          <div>
+            <p className="mb-2 font-mono text-[10px] text-white/40">QUEUE</p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="border-red-500 text-red-400 hover:border-red-400"
+                disabled={busy}
+                onClick={() => runAction("clear_pending", "Delete all pending scheduled actions?")}
+              >
+                Clear pending
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="border-red-500 text-red-400 hover:border-red-400"
+                disabled={busy}
+                onClick={() => runAction("clear_all", "Delete ALL scheduled actions including done/failed?")}
+              >
+                Clear all
+              </Button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="border-2 border-white/10 bg-black/30 p-4 sm:p-6">
@@ -265,7 +370,7 @@ export function CronSettingsForm({
       {message && <p className="font-mono text-xs text-neon-cyan">{message}</p>}
       {error && <p className="font-mono text-xs text-red-400">{error}</p>}
 
-      <Button onClick={save} disabled={loading} className="w-full sm:w-auto">
+      <Button onClick={save} disabled={busy} className="w-full sm:w-auto">
         {loading ? "Saving..." : "Save cron settings"}
       </Button>
     </div>
