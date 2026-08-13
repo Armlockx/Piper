@@ -1,4 +1,5 @@
 import { planDateKey } from "@/lib/cron/schedulePlan";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { ScheduledActionStatus, ScheduledActionType } from "@/lib/types/database";
 
 export const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -293,4 +294,23 @@ export async function listCronDayActions(input: {
     })),
     nextCursor,
   };
+}
+
+export function createSupabaseCronReportStore(): CronReportStore {
+  const admin = createAdminClient();
+  return {
+    async listByExecuteAtRange(startIso, endIso) {
+      const { data, error } = await admin
+        .from("scheduled_actions")
+        .select("id, action_type, status, execute_at, processed_at, error")
+        .gte("execute_at", startIso)
+        .lt("execute_at", endIso);
+      if (error) throw new Error(error.message);
+      return (data ?? []) as CronReportRow[];
+    },
+  };
+}
+
+export function cronReportTimeZone(): string {
+  return process.env.PIPER_TZ ?? "America/Sao_Paulo";
 }
