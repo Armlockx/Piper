@@ -3,6 +3,12 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { AdminSplit } from "@/components/admin/AdminSplit";
+import {
+  CronReportPanel,
+  type CronDayActionsPayload,
+  type CronReportDay,
+} from "@/components/admin/CronReportPanel";
 import type { CronSettings } from "@/lib/types/database";
 import type { CronAdminStatus } from "@/lib/cron/adminStatus";
 
@@ -41,9 +47,13 @@ function formatTime(iso: string | null, timezone: string) {
 export function CronSettingsForm({
   initialSettings,
   initialStatus,
+  initialReport,
+  initialActions,
 }: {
   initialSettings: CronSettings;
   initialStatus: CronAdminStatus;
+  initialReport: { from: string; to: string; days: CronReportDay[]; timezone: string };
+  initialActions: CronDayActionsPayload;
 }) {
   const [form, setForm] = useState<FormState>(initialSettings);
   const [status, setStatus] = useState(initialStatus);
@@ -51,6 +61,7 @@ export function CronSettingsForm({
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   const busy = loading || Boolean(actionLoading);
 
@@ -78,6 +89,7 @@ export function CronSettingsForm({
       const data = await res.json();
       if (!res.ok) throw new Error(typeof data.error === "string" ? data.error : "Action failed");
       setStatus(data.status);
+      setReloadToken((n) => n + 1);
       if (data.timedOut) {
         setMessage(`Timed out with ${data.remaining} pending left. Click again to continue.`);
       } else if (data.already_planned) {
@@ -121,6 +133,9 @@ export function CronSettingsForm({
   }
 
   return (
+    <AdminSplit
+      leftSpan={5}
+      left={
     <div className="space-y-6">
       <section className="border-2 border-white/10 bg-black/30 p-4 sm:p-6">
         <h2 className="mb-3 font-pixel text-[10px] text-neon-cyan tracking-widest">TODAY</h2>
@@ -138,12 +153,8 @@ export function CronSettingsForm({
             <dd className="text-neon-cyan">{status.pending}</dd>
           </div>
           <div>
-            <dt className="text-white/40">Done</dt>
-            <dd className="text-white/90">{status.done}</dd>
-          </div>
-          <div>
-            <dt className="text-white/40">Failed</dt>
-            <dd className={status.failed > 0 ? "text-red-400" : "text-white/90"}>{status.failed}</dd>
+            <dt className="text-white/40">Processing</dt>
+            <dd className="text-white/90">{status.processing}</dd>
           </div>
           <div>
             <dt className="text-white/40">Next action</dt>
@@ -335,36 +346,31 @@ export function CronSettingsForm({
         <p className="mb-4 font-mono text-[11px] text-white/45">
           Each day the planner picks a random count within these min/max ranges per action type.
         </p>
-        <div className="space-y-4">
+        <div className="grid grid-cols-[1fr_4.5rem_4.5rem] gap-x-2 gap-y-2 sm:items-center">
+          <p className="font-mono text-[10px] text-white/40">Action</p>
+          <p className="font-mono text-[10px] text-white/40">Min</p>
+          <p className="font-mono text-[10px] text-white/40">Max</p>
           {QUOTA_ROWS.map(({ key, label, hint }) => {
             const minKey = `${key}_min` as keyof FormState;
             const maxKey = `${key}_max` as keyof FormState;
             return (
-              <div key={key} className="grid gap-2 sm:grid-cols-[1fr_5rem_5rem] sm:items-end">
+              <div key={key} className="contents">
                 <div>
                   <p className="font-mono text-xs text-white/80">{label}</p>
                   <p className="font-mono text-[10px] text-white/40">{hint}</p>
                 </div>
-                <div>
-                  <label className="font-mono text-[10px] text-white/40">Min</label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={form[minKey] as number}
-                    onChange={(e) => setQuotaMinMax(key, "min", e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="font-mono text-[10px] text-white/40">Max</label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={form[maxKey] as number}
-                    onChange={(e) => setQuotaMinMax(key, "max", e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form[minKey] as number}
+                  onChange={(e) => setQuotaMinMax(key, "min", e.target.value)}
+                />
+                <Input
+                  type="number"
+                  min={0}
+                  value={form[maxKey] as number}
+                  onChange={(e) => setQuotaMinMax(key, "max", e.target.value)}
+                />
               </div>
             );
           })}
@@ -378,6 +384,18 @@ export function CronSettingsForm({
         {loading ? "Saving..." : "Save cron settings"}
       </Button>
     </div>
+      }
+      right={
+        <CronReportPanel
+          timezone={initialReport.timezone}
+          initialFrom={initialReport.from}
+          initialTo={initialReport.to}
+          initialDays={initialReport.days}
+          initialActions={initialActions}
+          reloadToken={reloadToken}
+        />
+      }
+    />
   );
 }
 
