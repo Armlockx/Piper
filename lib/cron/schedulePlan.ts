@@ -12,7 +12,7 @@ type PlanItem = {
   execute_at: string;
 };
 
-function planDateKey(now = new Date(), timeZone = process.env.PIPER_TZ ?? "America/Sao_Paulo"): string {
+export function planDateKey(now = new Date(), timeZone = process.env.PIPER_TZ ?? "America/Sao_Paulo"): string {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone,
     year: "numeric",
