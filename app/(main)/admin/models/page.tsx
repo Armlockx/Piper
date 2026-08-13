@@ -13,7 +13,7 @@ export default async function AdminModelsPage() {
   const config = await getLlmAdminConfig();
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6 pb-24">
+    <div className="mx-auto w-full max-w-[1400px] px-4 py-6 pb-24">
       <h1 className="mb-2 font-pixel text-xs text-neon-magenta tracking-widest">{t("modelsTitle")}</h1>
       <p className="mb-6 font-mono text-xs text-white/45">{t("modelsBody")}</p>
       <ModelsSettingsForm

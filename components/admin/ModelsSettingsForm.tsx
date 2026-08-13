@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ModelPicker } from "@/components/admin/ModelPicker";
+import { AdminSplit } from "@/components/admin/AdminSplit";
 import { groupCatalogModels, type CatalogModel } from "@/lib/llm/catalog";
 import type { LlmProviderPublic, LlmRoute } from "@/lib/types/database";
 
@@ -97,7 +98,9 @@ export function ModelsSettingsForm({ initialProviders, initialRoutes }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <AdminSplit
+      leftSpan={6}
+      left={
       <section>
         <h2 className="mb-3 font-mono text-sm text-white/70">{t("providers")}</h2>
         <div className="flex flex-col gap-4">
@@ -209,7 +212,8 @@ export function ModelsSettingsForm({ initialProviders, initialRoutes }: Props) {
           })}
         </div>
       </section>
-
+      }
+      right={
       <section>
         <h2 className="mb-3 font-mono text-sm text-white/70">{t("routes")}</h2>
         <div className="flex flex-col gap-3">
@@ -267,13 +271,14 @@ export function ModelsSettingsForm({ initialProviders, initialRoutes }: Props) {
             </div>
           ))}
         </div>
-      </section>
 
-      {message && <p className="font-mono text-xs text-neon-cyan">{message}</p>}
-      {error && <p className="font-mono text-xs text-red-400">{error}</p>}
-      <Button onClick={save} disabled={loading}>
+      {message && <p className="mt-4 font-mono text-xs text-neon-cyan">{message}</p>}
+      {error && <p className="mt-2 font-mono text-xs text-red-400">{error}</p>}
+      <Button onClick={save} disabled={loading} className="mt-4">
         {loading ? t("saving") : t("saveModels")}
       </Button>
-    </div>
+      </section>
+      }
+    />
   );
 }
