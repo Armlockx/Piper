@@ -6,6 +6,7 @@ import {
   fetchProviderModels,
   groupCatalogModels,
   loadProviderCatalog,
+  parseCatalogProviderId,
   toCatalogModels,
 } from "@/lib/llm/catalog";
 
@@ -127,6 +128,16 @@ describe("fetchProviderModels", () => {
         fetchImpl,
       })
     ).rejects.toMatchObject({ httpStatus: 502, message: expect.stringMatching(/^.{1,200}$/) });
+  });
+});
+
+describe("parseCatalogProviderId", () => {
+  it("accepts a uuid and rejects junk", () => {
+    expect(parseCatalogProviderId("11111111-1111-1111-8111-111111111111")).toBe(
+      "11111111-1111-1111-8111-111111111111"
+    );
+    expect(parseCatalogProviderId("nope")).toBeNull();
+    expect(parseCatalogProviderId(null)).toBeNull();
   });
 });
 

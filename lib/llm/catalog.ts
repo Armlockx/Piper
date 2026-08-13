@@ -16,6 +16,13 @@ export class CatalogError extends Error {
   }
 }
 
+export function parseCatalogProviderId(raw: string | null): string | null {
+  if (!raw) return null;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(raw)
+    ? raw
+    : null;
+}
+
 export function familyForModel(
   id: string,
   ownedBy: string | null | undefined,
