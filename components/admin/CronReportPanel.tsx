@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import { Button } from "@/components/ui/button";
 
 const CRON_ACTION_STATUSES = ["pending", "processing", "done", "failed", "cancelled"] as const;
@@ -70,14 +70,14 @@ export function CronReportPanel({
   initialTo,
   initialDays,
   initialActions,
-  reloadToken,
+  reloadRef,
 }: {
   timezone: string;
   initialFrom: string;
   initialTo: string;
   initialDays: CronReportDay[];
   initialActions: CronDayActionsPayload;
-  reloadToken: number;
+  reloadRef: MutableRefObject<(() => void) | null>;
 }) {
   const [days, setDays] = useState(initialDays);
   const [selectedDate, setSelectedDate] = useState(initialTo);
@@ -132,10 +132,13 @@ export function CronReportPanel({
   }
 
   useEffect(() => {
-    if (reloadToken === 0) return;
-    void loadReport();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reload after OPS only
-  }, [reloadToken]);
+    reloadRef.current = () => {
+      void loadReport();
+    };
+    return () => {
+      reloadRef.current = null;
+    };
+  });
 
   useEffect(() => {
     if (skipFirstList.current) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AdminSplit } from "@/components/admin/AdminSplit";
@@ -61,7 +61,7 @@ export function CronSettingsForm({
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [reloadToken, setReloadToken] = useState(0);
+  const reportReloadRef = useRef<(() => void) | null>(null);
 
   const busy = loading || Boolean(actionLoading);
 
@@ -89,7 +89,7 @@ export function CronSettingsForm({
       const data = await res.json();
       if (!res.ok) throw new Error(typeof data.error === "string" ? data.error : "Action failed");
       setStatus(data.status);
-      setReloadToken((n) => n + 1);
+      reportReloadRef.current?.();
       if (data.timedOut) {
         setMessage(`Timed out with ${data.remaining} pending left. Click again to continue.`);
       } else if (data.already_planned) {
@@ -392,7 +392,7 @@ export function CronSettingsForm({
           initialTo={initialReport.to}
           initialDays={initialReport.days}
           initialActions={initialActions}
-          reloadToken={reloadToken}
+          reloadRef={reportReloadRef}
         />
       }
     />
