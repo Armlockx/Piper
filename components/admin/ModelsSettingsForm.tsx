@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ModelPicker } from "@/components/admin/ModelPicker";
+import { groupCatalogModels, type CatalogModel } from "@/lib/llm/catalog";
 import type { LlmProviderPublic, LlmRoute } from "@/lib/types/database";
 
 type Props = {
@@ -19,6 +21,10 @@ export function ModelsSettingsForm({ initialProviders, initialRoutes }: Props) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [catalogs, setCatalogs] = useState<Record<string, CatalogModel[]>>({});
+  const [catalogLoading, setCatalogLoading] = useState<Record<string, boolean>>({});
+  const [catalogError, setCatalogError] = useState<Record<string, string>>({});
+  const [catalogQuery, setCatalogQuery] = useState<Record<string, string>>({});
 
   function setProvider<K extends keyof LlmProviderPublic>(id: string, key: K, value: LlmProviderPublic[K]) {
     setProviders((prev) => prev.map((p) => (p.id === id ? { ...p, [key]: value } : p)));
@@ -26,6 +32,30 @@ export function ModelsSettingsForm({ initialProviders, initialRoutes }: Props) {
 
   function setRoute(jobType: string, patch: Partial<LlmRoute>) {
     setRoutes((prev) => prev.map((r) => (r.job_type === jobType ? { ...r, ...patch } : r)));
+  }
+
+  async function loadCatalog(providerId: string) {
+    setCatalogLoading((prev) => ({ ...prev, [providerId]: true }));
+    setCatalogError((prev) => {
+      const next = { ...prev };
+      delete next[providerId];
+      return next;
+    });
+    try {
+      const res = await fetch(`/api/admin/models/catalog?providerId=${encodeURIComponent(providerId)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        const err =
+          typeof data.error === "string" ? data.error : t("modelsLoadFailed");
+        setCatalogError((prev) => ({ ...prev, [providerId]: err }));
+        return;
+      }
+      setCatalogs((prev) => ({ ...prev, [providerId]: data.models as CatalogModel[] }));
+    } catch {
+      setCatalogError((prev) => ({ ...prev, [providerId]: t("modelsLoadFailed") }));
+    } finally {
+      setCatalogLoading((prev) => ({ ...prev, [providerId]: false }));
+    }
   }
 
   async function save() {
@@ -71,40 +101,112 @@ export function ModelsSettingsForm({ initialProviders, initialRoutes }: Props) {
       <section>
         <h2 className="mb-3 font-mono text-sm text-white/70">{t("providers")}</h2>
         <div className="flex flex-col gap-4">
-          {providers.map((p) => (
-            <div key={p.id} className="border-2 border-white/10 bg-black/30 p-4">
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <p className="font-mono text-sm text-neon-cyan">{p.name}</p>
-                <label className="flex items-center gap-2 font-mono text-xs text-white/50">
-                  <input
-                    type="checkbox"
-                    checked={p.enabled}
-                    onChange={(e) => setProvider(p.id, "enabled", e.target.checked)}
-                  />
-                  {t("enabled")}
+          {providers.map((p) => {
+            const loaded = catalogs[p.id] !== undefined;
+            const models = catalogs[p.id] ?? [];
+            const q = (catalogQuery[p.id] ?? "").trim().toLowerCase();
+            const filtered = q
+              ? models.filter(
+                  (m) => m.id.toLowerCase().includes(q) || m.name.toLowerCase().includes(q)
+                )
+              : models;
+            const groups = groupCatalogModels(filtered);
+
+            return (
+              <div key={p.id} className="border-2 border-white/10 bg-black/30 p-4">
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <p className="font-mono text-sm text-neon-cyan">{p.name}</p>
+                  <label className="flex items-center gap-2 font-mono text-xs text-white/50">
+                    <input
+                      type="checkbox"
+                      checked={p.enabled}
+                      onChange={(e) => setProvider(p.id, "enabled", e.target.checked)}
+                    />
+                    {t("enabled")}
+                  </label>
+                </div>
+                <label className="font-mono text-xs text-white/40">{t("baseUrl")}</label>
+                <Input
+                  value={p.base_url}
+                  onChange={(e) => setProvider(p.id, "base_url", e.target.value)}
+                  className="mt-1 mb-3"
+                />
+                <label className="font-mono text-xs text-white/40">
+                  {p.key_configured
+                    ? t("apiKeySaved", { hint: p.key_hint ?? "****" })
+                    : t("apiKeyUnset")}
                 </label>
+                <Input
+                  type="password"
+                  autoComplete="off"
+                  placeholder={p.key_configured ? t("keepKey") : t("pasteKey")}
+                  value={keys[p.id] ?? ""}
+                  onChange={(e) => setKeys((prev) => ({ ...prev, [p.id]: e.target.value }))}
+                  className="mt-1 mb-3"
+                />
+                <div className="mb-2 flex flex-wrap items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={catalogLoading[p.id]}
+                    onClick={() => void loadCatalog(p.id)}
+                  >
+                    {loaded ? t("refreshModels") : t("loadModels")}
+                  </Button>
+                  {loaded && (
+                    <span className="font-mono text-xs text-white/50">
+                      {t("modelsLoaded", { count: models.length })}
+                    </span>
+                  )}
+                </div>
+                {catalogError[p.id] && (
+                  <p className="mb-2 font-mono text-xs text-red-400">{catalogError[p.id]}</p>
+                )}
+                {loaded && (
+                  <>
+                    <Input
+                      value={catalogQuery[p.id] ?? ""}
+                      onChange={(e) =>
+                        setCatalogQuery((prev) => ({ ...prev, [p.id]: e.target.value }))
+                      }
+                      placeholder={t("filterModels")}
+                      className="mb-2"
+                      autoComplete="off"
+                    />
+                    {models.length === 0 ? (
+                      <p className="font-mono text-xs text-white/40">{t("modelsEmpty")}</p>
+                    ) : (
+                      <div className="max-h-48 overflow-y-auto border-2 border-white/10 bg-black/40">
+                        {groups.length === 0 ? (
+                          <p className="px-3 py-2 font-mono text-xs text-white/40">—</p>
+                        ) : (
+                          groups.map((group) => (
+                            <div key={group.family}>
+                              <p className="sticky top-0 bg-black/90 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-neon-magenta">
+                                {group.family}
+                              </p>
+                              {group.models.map((m) => (
+                                <div
+                                  key={m.id}
+                                  className="px-3 py-1 font-mono text-xs text-white/70"
+                                >
+                                  <span className="block truncate">{m.id}</span>
+                                  {m.name !== m.id && (
+                                    <span className="block truncate text-white/40">{m.name}</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
-              <label className="font-mono text-xs text-white/40">{t("baseUrl")}</label>
-              <Input
-                value={p.base_url}
-                onChange={(e) => setProvider(p.id, "base_url", e.target.value)}
-                className="mt-1 mb-3"
-              />
-              <label className="font-mono text-xs text-white/40">
-                {p.key_configured
-                  ? t("apiKeySaved", { hint: p.key_hint ?? "****" })
-                  : t("apiKeyUnset")}
-              </label>
-              <Input
-                type="password"
-                autoComplete="off"
-                placeholder={p.key_configured ? t("keepKey") : t("pasteKey")}
-                value={keys[p.id] ?? ""}
-                onChange={(e) => setKeys((prev) => ({ ...prev, [p.id]: e.target.value }))}
-                className="mt-1"
-              />
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -119,7 +221,13 @@ export function ModelsSettingsForm({ initialProviders, initialRoutes }: Props) {
               <label className="font-mono text-xs text-white/40">{t("provider")}</label>
               <select
                 value={r.provider_id}
-                onChange={(e) => setRoute(r.job_type, { provider_id: e.target.value })}
+                onChange={(e) => {
+                  const provider_id = e.target.value;
+                  setRoute(r.job_type, { provider_id });
+                  if (catalogs[provider_id] === undefined) {
+                    void loadCatalog(provider_id);
+                  }
+                }}
                 className="mt-1 mb-3 w-full bg-black/40 border-2 border-white/15 px-4 py-2 font-mono text-sm focus:border-neon-cyan focus:outline-none"
               >
                 {providers.map((p) => (
@@ -129,10 +237,11 @@ export function ModelsSettingsForm({ initialProviders, initialRoutes }: Props) {
                 ))}
               </select>
               <label className="font-mono text-xs text-white/40">{t("modelId")}</label>
-              <Input
+              <ModelPicker
                 value={r.model_id}
-                onChange={(e) => setRoute(r.job_type, { model_id: e.target.value })}
-                className="mt-1 mb-3"
+                onChange={(model_id) => setRoute(r.job_type, { model_id })}
+                models={catalogs[r.provider_id] ?? []}
+                placeholder={t("searchModel")}
               />
               <div className="grid grid-cols-2 gap-3">
                 <div>

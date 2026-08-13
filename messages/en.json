@@ -120,6 +120,13 @@
     "saveModels": "Save models",
     "saving": "Saving...",
     "failed": "Failed to save",
+    "loadModels": "Load models",
+    "refreshModels": "Refresh",
+    "filterModels": "Filter models…",
+    "modelsLoaded": "{count} models",
+    "modelsEmpty": "No models returned.",
+    "modelsLoadFailed": "Could not load models.",
+    "searchModel": "Search or paste a model id",
     "jobs": {
       "feed_auto": "Feed auto-reply",
       "feed_mention": "Feed @mention",

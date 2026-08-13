@@ -120,6 +120,13 @@
     "saveModels": "Salvar modelos",
     "saving": "Salvando...",
     "failed": "Falha ao salvar",
+    "loadModels": "Carregar modelos",
+    "refreshModels": "Atualizar",
+    "filterModels": "Filtrar modelos…",
+    "modelsLoaded": "{count} modelos",
+    "modelsEmpty": "Nenhum modelo retornado.",
+    "modelsLoadFailed": "Não foi possível carregar os modelos.",
+    "searchModel": "Busque ou cole o id do modelo",
     "jobs": {
       "feed_auto": "Resposta automática no feed",
       "feed_mention": "Menção no feed",
