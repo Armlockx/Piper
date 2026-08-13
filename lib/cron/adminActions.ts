@@ -91,6 +91,61 @@ export async function runCronAdminAction(input: {
         nextExecuteAt: plan.nextExecuteAt,
       };
     }
+    case "run_due": {
+      const tick = await input.processDue(input.tickBatchSize);
+      return {
+        dueProcessed: tick.dueProcessed,
+        failed: tick.failed,
+        nextExecuteAt: tick.nextExecuteAt,
+        posts: tick.posts,
+        botReplies: tick.botReplies,
+        userReplies: tick.userReplies,
+        likes: tick.likes,
+        follows: tick.follows,
+        botFollows: tick.botFollows,
+        unfollows: tick.unfollows,
+        botsSpawned: tick.botsSpawned,
+      };
+    }
+    case "run_all_pending": {
+      const started = (input.now ?? new Date()).getTime();
+      const budget = input.timeBudgetMs ?? 240_000;
+      await input.store.setPendingExecuteAt(new Date(started).toISOString());
+      let dueProcessed = 0;
+      let failed = 0;
+      const counters = {
+        posts: 0,
+        botReplies: 0,
+        userReplies: 0,
+        likes: 0,
+        follows: 0,
+        botFollows: 0,
+        unfollows: 0,
+        botsSpawned: 0,
+      };
+      while (Date.now() - started < budget) {
+        const tick = await input.processDue(input.tickBatchSize);
+        dueProcessed += tick.dueProcessed;
+        failed += tick.failed;
+        counters.posts += tick.posts;
+        counters.botReplies += tick.botReplies;
+        counters.userReplies += tick.userReplies;
+        counters.likes += tick.likes;
+        counters.follows += tick.follows;
+        counters.botFollows += tick.botFollows;
+        counters.unfollows += tick.unfollows;
+        counters.botsSpawned += tick.botsSpawned;
+        if (tick.dueProcessed === 0 && tick.failed === 0) break;
+      }
+      const remaining = await input.store.countPending();
+      return {
+        dueProcessed,
+        failed,
+        remaining,
+        timedOut: remaining > 0,
+        ...counters,
+      };
+    }
     default:
       throw new Error("Unknown cron action");
   }

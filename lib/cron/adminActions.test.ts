@@ -56,7 +56,7 @@ const noopPlanDay = async () => ({
   nextExecuteAt: null,
 });
 
-const noopProcessDue = async () => ({
+const noopProcessDueResult = {
   dueProcessed: 0,
   failed: 0,
   nextExecuteAt: null,
@@ -68,7 +68,9 @@ const noopProcessDue = async () => ({
   botFollows: 0,
   unfollows: 0,
   botsSpawned: 0,
-});
+};
+
+const noopProcessDue = async () => ({ ...noopProcessDueResult });
 
 describe("runCronAdminAction", () => {
   it("clear_pending does not delete done rows", async () => {
@@ -142,5 +144,41 @@ describe("runCronAdminAction", () => {
     });
     expect(result.already_planned).toBe(true);
     expect(result.planned_count).toBe(9);
+  });
+
+  it("run_due is a single tick", async () => {
+    let calls = 0;
+    const result = await runCronAdminAction({
+      action: "run_due",
+      store: memoryStore({ pending: 10 }),
+      tickBatchSize: 2,
+      planDate: "2026-08-12",
+      planDay: noopPlanDay,
+      processDue: async (max) => {
+        calls += 1;
+        expect(max).toBe(2);
+        return { ...noopProcessDueResult, dueProcessed: max };
+      },
+    });
+    expect(calls).toBe(1);
+    expect(result.dueProcessed).toBe(2);
+  });
+
+  it("run_all_pending over budget returns timedOut and remaining without failing leftovers", async () => {
+    const store = memoryStore({ pending: 5 });
+    const result = await runCronAdminAction({
+      action: "run_all_pending",
+      store,
+      tickBatchSize: 2,
+      planDate: "2026-08-12",
+      planDay: noopPlanDay,
+      processDue: async () => ({ ...noopProcessDueResult, dueProcessed: 1 }),
+      now: new Date("2026-08-12T12:00:00Z"),
+      timeBudgetMs: 0,
+    });
+    expect(result.timedOut).toBe(true);
+    expect(result.remaining).toBe(5);
+    expect(store.snapshot().failed).toBe(0);
+    expect(store.snapshot().pending).toBe(5);
   });
 });
