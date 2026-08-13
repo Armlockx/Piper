@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  parseCronAdminAction,
   runCronAdminAction,
   type CronAdminStore,
 } from "@/lib/cron/adminActions";
@@ -71,6 +72,13 @@ const noopProcessDueResult = {
 };
 
 const noopProcessDue = async () => ({ ...noopProcessDueResult });
+
+describe("parseCronAdminAction", () => {
+  it("parseCronAdminAction rejects unknown values", () => {
+    expect(parseCronAdminAction("clear_pending")).toBe("clear_pending");
+    expect(parseCronAdminAction("nope")).toBeNull();
+  });
+});
 
 describe("runCronAdminAction", () => {
   it("clear_pending does not delete done rows", async () => {

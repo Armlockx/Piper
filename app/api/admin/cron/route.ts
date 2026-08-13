@@ -1,8 +1,17 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdminApi } from "@/lib/auth/isAdmin";
+import {
+  createSupabaseCronAdminStore,
+  parseCronAdminAction,
+  runCronAdminAction,
+} from "@/lib/cron/adminActions";
 import { getCronAdminStatus } from "@/lib/cron/adminStatus";
 import { getCronSettings, updateCronSettings } from "@/lib/cron/config";
+import { processDueActions } from "@/lib/cron/processDue";
+import { planDateKey, planDay } from "@/lib/cron/schedulePlan";
+
+export const maxDuration = 300;
 
 const int = (min: number, max: number) => z.coerce.number().int().min(min).max(max);
 
@@ -113,6 +122,44 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ settings, status });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to save";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  const auth = await requireAdminApi();
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
+  let json: unknown;
+  try {
+    json = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const action = parseCronAdminAction(
+    json && typeof json === "object" && "action" in json ? (json as { action: unknown }).action : null
+  );
+  if (!action) {
+    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+  }
+
+  try {
+    const settings = await getCronSettings(true);
+    const result = await runCronAdminAction({
+      action,
+      store: createSupabaseCronAdminStore(),
+      tickBatchSize: settings.tick_batch_size,
+      planDate: planDateKey(),
+      planDay,
+      processDue: processDueActions,
+    });
+    const status = await getCronAdminStatus();
+    return NextResponse.json({ settings, status, ...result });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Cron action failed";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

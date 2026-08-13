@@ -1,3 +1,5 @@
+import { createAdminClient } from "@/lib/supabase/admin";
+
 export type CronAdminAction =
   | "clear_pending"
   | "clear_all"
@@ -6,6 +8,22 @@ export type CronAdminAction =
   | "replan"
   | "run_due"
   | "run_all_pending";
+
+export const CRON_ADMIN_ACTIONS = [
+  "clear_pending",
+  "clear_all",
+  "reset_plan",
+  "retry_failed",
+  "replan",
+  "run_due",
+  "run_all_pending",
+] as const;
+
+export function parseCronAdminAction(raw: unknown): CronAdminAction | null {
+  return typeof raw === "string" && (CRON_ADMIN_ACTIONS as readonly string[]).includes(raw)
+    ? (raw as CronAdminAction)
+    : null;
+}
 
 export type CronAdminStore = {
   deletePending(): Promise<number>;
@@ -60,6 +78,61 @@ export type CronAdminActionResult = {
   unfollows?: number;
   botsSpawned?: number;
 };
+
+export function createSupabaseCronAdminStore(): CronAdminStore {
+  const admin = createAdminClient();
+  return {
+    async deletePending() {
+      const { data, error } = await admin
+        .from("scheduled_actions")
+        .delete()
+        .eq("status", "pending")
+        .select("id");
+      if (error) throw error;
+      return data?.length ?? 0;
+    },
+    async deleteAllActions() {
+      const { data, error } = await admin
+        .from("scheduled_actions")
+        .delete()
+        .not("id", "is", null)
+        .select("id");
+      if (error) throw error;
+      return data?.length ?? 0;
+    },
+    async deletePlan(date) {
+      const { data, error } = await admin.from("cron_plan_daily").delete().eq("date", date).select("date");
+      if (error) throw error;
+      return (data?.length ?? 0) > 0;
+    },
+    async retryFailed() {
+      const { data, error } = await admin
+        .from("scheduled_actions")
+        .update({ status: "pending", error: null, processed_at: null })
+        .eq("status", "failed")
+        .select("id");
+      if (error) throw error;
+      return data?.length ?? 0;
+    },
+    async setPendingExecuteAt(iso) {
+      const { data, error } = await admin
+        .from("scheduled_actions")
+        .update({ execute_at: iso })
+        .eq("status", "pending")
+        .select("id");
+      if (error) throw error;
+      return data?.length ?? 0;
+    },
+    async countPending() {
+      const { count, error } = await admin
+        .from("scheduled_actions")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending");
+      if (error) throw error;
+      return count ?? 0;
+    },
+  };
+}
 
 export async function runCronAdminAction(input: {
   action: CronAdminAction;
