@@ -78,7 +78,6 @@ export function CronSettingsForm({
       const data = await res.json();
       if (!res.ok) throw new Error(typeof data.error === "string" ? data.error : "Action failed");
       setStatus(data.status);
-      if (data.settings) setForm(data.settings);
       if (data.timedOut) {
         setMessage(`Timed out with ${data.remaining} pending left. Click again to continue.`);
       } else if (data.already_planned) {
@@ -195,7 +194,12 @@ export function CronSettingsForm({
                 variant="outline"
                 size="sm"
                 disabled={busy}
-                onClick={() => runAction("reset_plan", "Delete today's plan so you can replan?")}
+                onClick={() =>
+                  runAction(
+                    "reset_plan",
+                    "Delete today's plan row so you can replan? Pending scheduled actions are kept. Replan today will add another full day's actions unless you Clear pending first."
+                  )
+                }
               >
                 Reset plan
               </Button>
