@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatRelativeTime(date: string | Date) {
+export function formatRelativeTime(date: string | Date, locale: string = "en") {
   const now = Date.now();
   const then = new Date(date).getTime();
   const diff = Math.max(0, now - then);
@@ -18,5 +18,6 @@ export function formatRelativeTime(date: string | Date) {
   if (hours < 24) return `${hours}h`;
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}d`;
-  return new Date(date).toLocaleDateString();
+  const intlLocale = locale.startsWith("pt") ? "pt-BR" : "en-US";
+  return new Date(date).toLocaleDateString(intlLocale);
 }

@@ -13,6 +13,7 @@ export type Profile = {
   verification_sent_at: string | null;
   onboarding_done: boolean;
   is_admin: boolean;
+  preferred_locale?: "en" | "pt";
   created_at: string;
   updated_at: string;
 };
@@ -62,6 +63,16 @@ export type Bot = {
   archetype?: string | null;
   spawn_batch_id?: string | null;
   active?: boolean;
+  bio?: string | null;
+  native_locale?: "en" | "pt";
+  code_switch?: number;
+  piety?: number;
+  partisanship?: number;
+  traditionalism?: number;
+  class_position?: number;
+  cynicism?: number;
+  tenderness?: number;
+  verbosity?: number;
   created_at: string;
 };
 
@@ -197,6 +208,34 @@ export type CronPlanDaily = {
   created_at: string;
 };
 
+export type LlmJobType =
+  | "feed_auto"
+  | "feed_mention"
+  | "chat"
+  | "mood"
+  | "cron_post"
+  | "cron_reply"
+  | "spawn";
+
+export type LlmProviderPublic = {
+  id: string;
+  slug: string;
+  name: string;
+  base_url: string;
+  enabled: boolean;
+  key_configured: boolean;
+  key_hint: string | null;
+  updated_at: string;
+};
+
+export type LlmRoute = {
+  job_type: LlmJobType;
+  provider_id: string;
+  model_id: string;
+  max_tokens: number;
+  temperature: number;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -277,6 +316,27 @@ export type Database = {
         Row: CronSettings;
         Insert: Partial<CronSettings>;
         Update: Partial<CronSettings>;
+      };
+      llm_providers: {
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          base_url: string;
+          api_key_ciphertext: string | null;
+          api_key_nonce: string | null;
+          key_hint: string | null;
+          enabled: boolean;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      llm_routes: {
+        Row: LlmRoute;
+        Insert: Partial<LlmRoute>;
+        Update: Partial<LlmRoute>;
       };
     };
   };

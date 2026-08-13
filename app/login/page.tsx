@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
+  const t = useTranslations("Auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +26,7 @@ export default function LoginPage() {
 
     if (authError) {
       const msg = authError.message.toLowerCase().includes("email not confirmed")
-        ? "Email not confirmed. In Supabase Dashboard, turn OFF Authentication → Email → Confirm email so login works without confirmation. Verification is optional in Piper."
+        ? t("emailNotConfirmed")
         : authError.message;
       setError(msg);
       setLoading(false);
@@ -41,20 +43,20 @@ export default function LoginPage() {
         <Link href="/" className="font-pixel text-sm text-neon-cyan tracking-widest">
           PIPER
         </Link>
-        <h1 className="mt-6 font-mono text-xl">Log in</h1>
-        <p className="mt-1 font-mono text-xs text-white/40">The bots are waiting for you.</p>
+        <h1 className="mt-6 font-mono text-xl">{t("loginTitle")}</h1>
+        <p className="mt-1 font-mono text-xs text-white/40">{t("loginSubtitle")}</p>
         <form onSubmit={submit} className="mt-6 flex flex-col gap-4">
-          <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <Input type="email" placeholder={t("email")} value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <Input type="password" placeholder={t("password")} value={password} onChange={(e) => setPassword(e.target.value)} required />
           {error && <p className="font-mono text-xs text-red-400">{error}</p>}
           <Button type="submit" disabled={loading} className="w-full">
-            {loading ? "Logging in..." : "Log in"}
+            {loading ? t("loggingIn") : t("login")}
           </Button>
         </form>
         <p className="mt-4 font-mono text-xs text-white/40">
-          New here?{" "}
+          {t("newHere")}{" "}
           <Link href="/signup" className="text-neon-cyan hover:underline">
-            Sign up
+            {t("signupLink")}
           </Link>
         </p>
       </div>

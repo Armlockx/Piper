@@ -7,6 +7,7 @@ import { BotMoodBadge } from "@/components/chat/BotMoodBadge";
 import { ChatComposer } from "@/components/chat/ChatComposer";
 import { useChatRealtime } from "@/lib/realtime/useChatRealtime";
 import { formatRelativeTime } from "@/lib/utils";
+import { useLocale } from "next-intl";
 import type { Bot, BotConversationState, ChatMessage } from "@/lib/types/database";
 
 type ChatWindowProps = {
@@ -26,6 +27,7 @@ export function ChatWindow({
   compact,
   onOpenFull,
 }: ChatWindowProps) {
+  const locale = useLocale();
   const [messages, setMessages] = useState(initialMessages);
   const [seedId, setSeedId] = useState(conversationId);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -100,7 +102,7 @@ export function ChatWindow({
                 style={!mine ? { borderColor: `${bot.accent_color}55` } : undefined}
               >
                 <p className="whitespace-pre-wrap break-words leading-relaxed">{m.content}</p>
-                <p className="mt-1 text-[10px] text-white/30">{formatRelativeTime(m.created_at)}</p>
+                <p className="mt-1 text-[10px] text-white/30">{formatRelativeTime(m.created_at, locale)}</p>
               </div>
             </div>
           );

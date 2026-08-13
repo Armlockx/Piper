@@ -1,10 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export function FeedTabs({ active }: { active: string }) {
+  const t = useTranslations("Feed");
   const tabs = [
-    { id: "foryou", label: "For you", href: "/?tab=foryou" },
-    { id: "following", label: "Following", href: "/?tab=following" },
+    { id: "foryou", label: t("forYou"), href: "/?tab=foryou" },
+    { id: "following", label: t("following"), href: "/?tab=following" },
   ];
 
   return (

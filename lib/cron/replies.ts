@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildBotPrompt } from "@/lib/groq/buildBotPrompt";
-import { runGroqChatCompletion } from "@/lib/groq/client";
-import { sanitizeBotReply } from "@/lib/groq/sanitizeReply";
+import { runLlmCompletion } from "@/lib/llm/complete";
+import { sanitizeBotReply } from "@/lib/llm/sanitizeReply";
 import type { Bot, PostWithAuthor } from "@/lib/types/database";
 async function replyAsBotNow(bot: Bot, target: PostWithAuthor) {
   const admin = createAdminClient();
@@ -15,7 +15,7 @@ async function replyAsBotNow(bot: Bot, target: PostWithAuthor) {
     .limit(12);
 
   const messages = buildBotPrompt(bot, target, (threadPosts ?? []) as PostWithAuthor[]);
-  const { reply } = await runGroqChatCompletion(messages, "default");
+  const { reply } = await runLlmCompletion("cron_reply", messages);
   const content = sanitizeBotReply(reply).slice(0, 280);
   if (!content) return false;
 

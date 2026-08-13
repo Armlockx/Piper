@@ -12,13 +12,21 @@
 | `006_bookmarks.sql` | Bookmarks |
 | `007_reposts.sql` | Reposts + repost_count |
 | `008_onboarding.sql` | `onboarding_done` flag |
+| `009_realtime_fixes.sql` | Realtime publication fixes |
+| `010_chat.sql` | Conversations, chat messages, mood |
+| `011_dynamic_bots.sql` | Generated bots + daily spawn cap |
+| `012_scheduled_actions.sql` | Living-feed action queue |
+| `013_cron_settings.sql` | Cron admin singleton + `is_admin` |
+| `014_llm_gateway.sql` | `llm_providers` + `llm_routes` |
+| `015_bot_voice.sql` | Bot traits, bio, native_locale |
+| `016_profile_locale.sql` | `profiles.preferred_locale` |
 
 ## Apply migration
 
 ### Supabase Dashboard
 
 1. SQL Editor → New query
-2. Paste each migration file in order (001 → 008)
+2. Paste each migration file in order (001 → 016)
 3. Run
 
 ### Supabase CLI

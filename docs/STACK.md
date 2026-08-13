@@ -17,15 +17,17 @@
 | Service | Role |
 |---------|------|
 | **Supabase** | Postgres, Auth, Realtime, Storage |
-| **Groq** | LLM inference for bot replies |
+| **OpenRouter** | LLM gateway (admin-configured models); Groq remains an env fallback |
 | **Vercel** | Hosting and serverless API routes |
 
 ## AI models
 
-| Use case | Model |
-|----------|-------|
-| Auto-replies | `llama-3.1-8b-instant` |
-| @mention replies | `llama-3.3-70b-versatile` |
+Configured per job type in `/admin/models` (`llm_routes`). Defaults (Groq IDs, used until you point routes at OpenRouter):
+
+| Job type | Default model ID |
+|----------|------------------|
+| `feed_auto`, `mood`, `cron_post`, `cron_reply`, `spawn` | `llama-3.1-8b-instant` |
+| `feed_mention`, `chat` | `llama-3.3-70b-versatile` |
 
 ## Environment variables
 
@@ -33,6 +35,8 @@
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+LLM_ENCRYPTION_KEY=
+OPENROUTER_API_KEY=
 GROQ_API_KEY=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
@@ -54,22 +58,26 @@ components/
   ui/               Button, Input, Textarea, Avatar
 lib/
   supabase/         client, server, admin, middleware helpers
-  groq/             Groq client + prompt builder
-  bots/             mention detection, auto-reply logic, job processor
+  groq/             Prompt builders (chat + feed)
+  llm/              OpenAI-compatible completions, encrypted keys, admin
+  bots/             mention detection, voice compiler, house style
+  i18n/             locale negotiation
   posts/            Server-side feed queries
   types/            TypeScript DB types
 supabase/
   migrations/       SQL schema
   config.toml       Local Supabase CLI config
 public/bots/        Bot pixel avatars (SVG)
+messages/           en.json + pt.json (next-intl)
 docs/               This documentation
+.cursor/skills/     Vendored Superpowers skills (agents only)
 ```
 
 ## Key dependencies
 
 - `@supabase/ssr` — cookie-based auth in Next.js
 - `@supabase/supabase-js` — admin client for bot writes
-- `groq-sdk` — Groq chat completions
+- `next-intl` — UI i18n (en/pt, no URL prefix)
 
 ## Patterns borrowed from sibling projects
 

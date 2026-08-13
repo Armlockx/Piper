@@ -1,15 +1,16 @@
 import type { Bot, BotConversationState, ChatMessage } from "@/lib/types/database";
-import type { ChatTurn } from "@/lib/groq/client";
+import type { ChatTurn } from "@/lib/llm/complete";
+import { buildCharacterBlock } from "@/lib/bots/systemPrompt";
 
 const MOOD_HINTS: Record<string, string> = {
   neutral: "balanced and present",
   playful: "playful, teasing, light jokes",
   curious: "curious, asking follow-ups",
-  nostalgic: "nostalgic about old-web vibes",
-  hype: "excited and encouraging",
+  nostalgic: "nostalgic, but not costume-shop nostalgic",
+  hype: "amped, then suspicious of the amp",
   chill: "relaxed and low-key",
   witty: "sharp and clever",
-  warm: "warm and supportive",
+  warm: "warm without becoming a greeting card",
 };
 
 export function buildChatPrompt(
@@ -26,10 +27,7 @@ export function buildChatPrompt(
   const recent = history.slice(-40);
   const transcript = recent
     .map((m) => {
-      const who =
-        m.sender_type === "bot"
-          ? `@${bot.handle}`
-          : `@${userHandle}`;
+      const who = m.sender_type === "bot" ? `@${bot.handle}` : `@${userHandle}`;
       return `${who}: ${m.content}`;
     })
     .join("\n");
@@ -37,15 +35,14 @@ export function buildChatPrompt(
   return [
     {
       role: "system",
-      content: `${bot.persona_prompt}
-
-You are @${bot.handle} chatting privately with @${userHandle} on Piper, a retro social network.
-This is a real conversation — be creative, interactive, and stay in character.
-Never say you are an AI, a model, or a bot. Sound like a real early-web person.
-Reference prior context when it matters. Ask questions. Improvise. Have opinions.
+      content: buildCharacterBlock(
+        bot,
+        `You are @${bot.handle} chatting privately with @${userHandle} on Piper.
+This is a real conversation. Stay in character. Reference prior context when it matters. Ask questions. Improvise. Have opinions.
 Current mood: ${mood} (intensity ${intensity}/10) — lean ${moodHint}.
 ${summary ? `Conversation memory (summary):\n${summary}` : "No long-term summary yet — build rapport from the transcript."}
-Keep replies natural (1–4 short paragraphs). Plain text only — no quotation wrapping.`,
+Keep replies natural (1–4 short paragraphs unless your voice is tighter). Plain text only.`
+      ),
     },
     {
       role: "user",
@@ -62,7 +59,8 @@ export function buildMoodUpdatePrompt(
   history: ChatMessage[],
   previous: BotConversationState | null
 ): ChatTurn[] {
-  const recent = history.slice(-20)
+  const recent = history
+    .slice(-20)
     .map((m) => `${m.sender_type}: ${m.content}`)
     .join("\n");
 

@@ -10,6 +10,7 @@ import { PostContent } from "@/components/feed/PostContent";
 import { VerifiedBadge } from "@/components/profile/VerifiedBadge";
 import { usePostCounters } from "@/lib/realtime/usePostCounters";
 import { formatRelativeTime } from "@/lib/utils";
+import { useLocale } from "next-intl";
 import type { PostWithAuthor } from "@/lib/types/database";
 
 type PostCardProps = {
@@ -20,6 +21,7 @@ type PostCardProps = {
 };
 
 export function PostCard({ post, currentUserId, onLike, showReply = true }: PostCardProps) {
+  const locale = useLocale();
   const [liked, setLiked] = useState(post.liked_by_me ?? false);
   const [liking, setLiking] = useState(false);
   const [burst, setBurst] = useState(false);
@@ -111,7 +113,7 @@ export function PostCard({ post, currentUserId, onLike, showReply = true }: Post
             <span className="font-mono text-xs text-white/40">@{handle}</span>
             {isBot && post.bots && <BotBadge handle={post.bots.handle} color={post.bots.accent_color} />}
             {!isBot && post.profiles?.email_verified_at && <VerifiedBadge />}
-            <span className="font-mono text-xs text-white/30">· {formatRelativeTime(post.created_at)}</span>
+            <span className="font-mono text-xs text-white/30">· {formatRelativeTime(post.created_at, locale)}</span>
           </div>
           <div className="mt-2">
             <p className="font-mono text-sm leading-relaxed whitespace-pre-wrap break-words">

@@ -88,6 +88,18 @@ Unique `(user_id, post_id)`. Amplifies a post. `posts.repost_count` kept in sync
 
 `profiles.onboarding_done` boolean — welcome panel until true.
 
+### llm_providers / llm_routes (migration 014)
+
+Admin-only (RLS denies public). Encrypted API keys + per-job-type model routes. Configure at `/admin/models`.
+
+### bot voice (migration 015)
+
+On `bots`: `bio`, `native_locale` (`en`|`pt`), `code_switch` 0–10, and trait sliders 0–10 (`piety`, `partisanship`, `traditionalism`, `class_position`, `cynicism`, `tenderness`, `verbosity`). Public profiles show bio + language line, not sliders.
+
+### profile locale (migration 016)
+
+`profiles.preferred_locale` (`en`|`pt`). UI locale also uses cookie `NEXT_LOCALE`.
+
 ## Planned ERD additions
 
 ```mermaid
@@ -114,6 +126,8 @@ erDiagram
 | reposts | public | own | — | own |
 | notifications | own | service/API | own | — |
 | bot_reply_jobs | public | service role | service role | — |
+| llm_providers | — | — | — | — |
+| llm_routes | — | — | — | — |
 
 Bot posts inserted only via service role client.
 

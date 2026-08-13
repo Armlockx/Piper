@@ -1,14 +1,17 @@
-import { createGroqClient, runGroqChatCompletion } from "@/lib/groq/client";
-import type { ChatTurn } from "@/lib/groq/client";
+import { runLlmCompletion, type ChatTurn } from "@/lib/llm/complete";
+import { compileVoice, type BotVoiceInput } from "@/lib/bots/compileVoice";
+import { HOUSE_STYLE, SPAWN_GUARDRAILS } from "@/lib/bots/houseStyle";
+import { randInt } from "@/lib/cron/topics";
 
 export type GeneratedBotSpec = {
   handle: string;
   name: string;
   persona_prompt: string;
+  bio: string;
   accent_color: string;
   archetype: string;
   auto_reply_weight: number;
-};
+} & BotVoiceInput;
 
 const ACCENT_PALETTE = [
   "#00ffd5",
@@ -21,6 +24,27 @@ const ACCENT_PALETTE = [
   "#e0aaff",
 ];
 
+function sampleTrait(): number {
+  const roll = Math.random();
+  if (roll < 0.4) return randInt(0, 3);
+  if (roll < 0.8) return randInt(7, 10);
+  return randInt(4, 6);
+}
+
+export function sampleVoiceTraits(): BotVoiceInput {
+  return {
+    piety: sampleTrait(),
+    partisanship: sampleTrait(),
+    traditionalism: sampleTrait(),
+    class_position: sampleTrait(),
+    cynicism: sampleTrait(),
+    tenderness: sampleTrait(),
+    verbosity: sampleTrait(),
+    code_switch: randInt(0, 6),
+    native_locale: Math.random() < 0.45 ? "pt" : "en",
+  };
+}
+
 function sanitizeHandle(raw: string): string {
   return raw
     .toLowerCase()
@@ -28,14 +52,15 @@ function sanitizeHandle(raw: string): string {
     .slice(0, 20);
 }
 
-function parseBotJson(raw: string): GeneratedBotSpec | null {
+function parseBotJson(raw: string, traits: BotVoiceInput): GeneratedBotSpec | null {
   try {
     const match = raw.match(/\{[\s\S]*\}/);
     if (!match) return null;
     const obj = JSON.parse(match[0]) as Record<string, unknown>;
     const handle = sanitizeHandle(String(obj.handle ?? ""));
     const name = String(obj.name ?? "").trim().slice(0, 40);
-    const persona_prompt = String(obj.persona_prompt ?? "").trim().slice(0, 600);
+    const persona_prompt = String(obj.persona_prompt ?? "").trim().slice(0, 800);
+    const bio = String(obj.bio ?? "").trim().slice(0, 220);
     const archetype = String(obj.archetype ?? "wanderer")
       .toLowerCase()
       .replace(/[^a-z0-9_]/g, "_")
@@ -50,9 +75,11 @@ function parseBotJson(raw: string): GeneratedBotSpec | null {
       handle,
       name,
       persona_prompt,
+      bio: bio || persona_prompt.slice(0, 160),
       accent_color,
       archetype,
       auto_reply_weight: weight,
+      ...traits,
     };
   } catch {
     return null;
@@ -79,47 +106,37 @@ export function buildBotAvatarDataUrl(name: string, accent: string): string {
 }
 
 export async function generateBotPersona(existingHandles: string[], existingArchetypes: string[]) {
+  const traits = sampleVoiceTraits();
+  const language = traits.native_locale === "pt" ? "Portuguese" : "English";
   const messages: ChatTurn[] = [
     {
       role: "system",
-      content: `You invent a new friendly persona for Piper, a retro early-web social network.
+      content: `You invent a new resident for Piper.
+${HOUSE_STYLE}
+${SPAWN_GUARDRAILS}
+
+Write persona_prompt and bio in ${language}.
 Reply with ONLY valid JSON (no markdown):
-{"handle":"2-20 chars lowercase alphanumeric underscore","name":"display name","archetype":"snake_case vibe label","persona_prompt":"2-4 sentences of personality for an LLM system prompt — never say AI/bot/model","accent_color":"#RRGGBB","auto_reply_weight":1-5}
+{"handle":"2-20 chars lowercase alphanumeric underscore","name":"display name","archetype":"snake_case vibe label","persona_prompt":"2-4 sentences of biography for an LLM system prompt — never say AI/bot/model","bio":"1-2 sentence public bio","accent_color":"#RRGGBB","auto_reply_weight":1-5}
 
 Rules:
 - Distinct from existing handles: ${existingHandles.slice(0, 40).join(", ") || "(none)"}
 - Avoid repeating archetypes: ${existingArchetypes.slice(0, 30).join(", ") || "(none)"}
-- Retro / pixel / dial-up / forum / guestbook energy
-- Warm, creative, interactive — not corporate`,
+- This person's voice:
+${compileVoice(traits)}`,
     },
     {
       role: "user",
-      content: "Invent one new Piper persona now.",
+      content: "Invent one new Piper resident now.",
     },
   ];
 
-  // Prefer structured JSON; fall back to free completion parse
-  try {
-    const client = createGroqClient();
-    const response = await client.chat.completions.create({
-      model: "llama-3.1-8b-instant",
-      messages,
-      max_tokens: 400,
-      temperature: 1.0,
-      response_format: { type: "json_object" },
-    });
-    const raw = response.choices[0]?.message?.content?.trim() ?? "";
-    const parsed = parseBotJson(raw);
-    if (parsed && !existingHandles.includes(parsed.handle)) return parsed;
-  } catch {
-    /* fall through */
-  }
-
-  const { raw } = await runGroqChatCompletion(messages, "default", {
-    maxTokens: 400,
+  const { raw } = await runLlmCompletion("spawn", messages, {
+    maxTokens: 500,
     temperature: 1.0,
+    json: true,
   });
-  const parsed = parseBotJson(raw);
+  const parsed = parseBotJson(raw, traits);
   if (parsed && !existingHandles.includes(parsed.handle)) return parsed;
   return null;
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useUnreadNotificationCount } from "@/components/layout/NotificationCountProvider";
 import { useNotificationList } from "@/lib/realtime/useNotificationRealtime";
 import { formatRelativeTime } from "@/lib/utils";
+import { useLocale, useTranslations } from "next-intl";
 import type { Notification } from "@/lib/types/database";
 
 export function NotificationList({
@@ -16,31 +17,33 @@ export function NotificationList({
 }) {
   const { items } = useNotificationList(userId, initial);
   const { markAllRead } = useUnreadNotificationCount();
+  const t = useTranslations("Notifications");
+  const locale = useLocale();
 
   useEffect(() => {
     void fetch("/api/notifications", { method: "PATCH" }).then(() => markAllRead());
   }, [markAllRead]);
 
   function label(n: Notification) {
-    const actor = n.actor?.display_name ?? n.bot?.name ?? "Someone";
+    const actor = n.actor?.display_name ?? n.bot?.name ?? t("someone");
     switch (n.type) {
       case "like":
-        return `${actor} liked your post`;
+        return t("liked", { actor });
       case "reply":
-        return `${actor} replied to you`;
+        return t("replied", { actor });
       case "follow":
-        return `${actor} followed you`;
+        return t("followed", { actor });
       case "bot_reply":
-        return `@${n.bot?.handle ?? "bot"} replied to you`;
+        return t("botReplied", { handle: n.bot?.handle ?? "bot" });
       default:
-        return "New activity";
+        return t("activity");
     }
   }
 
   return (
     <div className="flex flex-col gap-2">
       {items.length === 0 && (
-        <p className="font-mono text-sm text-white/40 py-8 text-center">All quiet. Post something!</p>
+        <p className="font-mono text-sm text-white/40 py-8 text-center">{t("quiet")}</p>
       )}
       {items.map((n) => (
         <Link
@@ -51,7 +54,7 @@ export function NotificationList({
           }`}
         >
           <p>{label(n)}</p>
-          <p className="mt-1 text-xs text-white/30">{formatRelativeTime(n.created_at)}</p>
+          <p className="mt-1 text-xs text-white/30">{formatRelativeTime(n.created_at, locale)}</p>
         </Link>
       ))}
     </div>

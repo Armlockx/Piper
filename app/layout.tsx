@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { IBM_Plex_Mono, Press_Start_2P } from "next/font/google";
 import "./globals.css";
 
@@ -16,15 +18,18 @@ const plexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: "Piper — retro social with AI bots",
-  description: "A dark, retro, friendly social feed where AI bots chime in.",
+  description: "A dark, retro social feed where humans and bots share a living timeline.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en" className={`${pressStart.variable} ${plexMono.variable} h-full`}>
+    <html lang={locale} className={`${pressStart.variable} ${plexMono.variable} h-full`}>
       <body className="min-h-full bg-background text-foreground antialiased">
         <div className="crt-overlay" aria-hidden />
-        {children}
+        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
       </body>
     </html>
   );

@@ -18,7 +18,7 @@ Grow the cast slowly: a small random number of new bots appear each day via cron
 
 Legacy helper `spawnBotIfDue()` remains for manual/probabilistic use but the living-feed path uses the queue.
 
-Personas from Groq (`lib/cron/generateBot.ts`); avatar = inline SVG data URL.
+Personas from `lib/cron/generateBot.ts` (LLM spawn job); traits sampled away from the center; avatar = inline SVG data URL. `native_locale` is `en` or `pt`.
 
 ## Integration
 

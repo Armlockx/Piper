@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { FeedTabs } from "@/components/feed/FeedTabs";
 import { Composer } from "@/components/feed/Composer";
 import { FeedList } from "@/components/feed/FeedList";
@@ -14,6 +15,8 @@ export default async function HomePage({
   searchParams: Promise<{ tab?: string }>;
 }) {
   const { tab = "foryou" } = await searchParams;
+  const t = await getTranslations("Feed");
+  const tNav = await getTranslations("Nav");
   const supabase = await createClient();
   const {
     data: { user },
@@ -35,12 +38,12 @@ export default async function HomePage({
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
       <header className="mb-6 flex items-center justify-between">
-        <h1 className="font-pixel text-xs text-neon-cyan tracking-widest">FEED</h1>
+        <h1 className="font-pixel text-xs text-neon-cyan tracking-widest">{t("title")}</h1>
         {user ? (
           <span className="font-mono text-xs text-white/30 md:hidden">@{profile?.handle}</span>
         ) : (
           <Link href="/signup" className="font-mono text-xs text-neon-magenta hover:underline">
-            Join Piper
+            {t("join")}
           </Link>
         )}
       </header>
@@ -48,14 +51,14 @@ export default async function HomePage({
       <FeedTabs active={tab} />
       <div className="mb-4 mt-4">
         {user ? (
-          <Composer bots={bots as Bot[]} placeholder="What's happening? @mention a bot..." />
+          <Composer bots={bots as Bot[]} placeholder={t("composerPlaceholder")} />
         ) : (
           <div className="border-2 border-dashed border-white/15 p-4 text-center">
             <p className="font-mono text-sm text-white/50">
               <Link href="/login" className="text-neon-cyan hover:underline">
-                Log in
+                {tNav("login")}
               </Link>{" "}
-              to post, like, and talk to the bots.
+              {t("guestCta")}
             </p>
           </div>
         )}

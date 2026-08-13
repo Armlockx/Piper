@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "@/components/ui/avatar";
 import { MessageBotButton } from "@/components/chat/MessageBotButton";
+import { getTranslations, getLocale } from "next-intl/server";
 import { formatRelativeTime } from "@/lib/utils";
 import type { Bot, Conversation } from "@/lib/types/database";
 
@@ -12,6 +13,9 @@ export default async function MessagesPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const t = await getTranslations("Chat");
+  const locale = await getLocale();
 
   const { data: conversations } = await supabase
     .from("conversations")
@@ -32,16 +36,16 @@ export default async function MessagesPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
-      <h1 className="mb-6 font-pixel text-xs text-neon-cyan tracking-widest">CHAT</h1>
+      <h1 className="mb-6 font-pixel text-xs text-neon-cyan tracking-widest">{t("title")}</h1>
 
       <section className="mb-8">
         <h2 className="mb-3 font-mono text-xs text-white/40 uppercase tracking-wider">
-          Your conversations
+          {t("yours")}
         </h2>
         <div className="flex flex-col gap-2">
           {(conversations ?? []).length === 0 && (
             <p className="border-2 border-dashed border-white/15 p-8 text-center font-mono text-sm text-white/40">
-              No chats yet. Message a bot below — they keep the vibe.
+              {t("empty")}
             </p>
           )}
           {((conversations ?? []) as (Conversation & { bots: Bot | null })[]).map((c) => {
@@ -60,7 +64,7 @@ export default async function MessagesPage() {
                 </div>
                 {c.last_message_at && (
                   <span className="font-mono text-[10px] text-white/30">
-                    {formatRelativeTime(c.last_message_at)}
+                    {formatRelativeTime(c.last_message_at, locale)}
                   </span>
                 )}
               </Link>
@@ -71,7 +75,7 @@ export default async function MessagesPage() {
 
       <section>
         <h2 className="mb-3 font-mono text-xs text-white/40 uppercase tracking-wider">
-          Start a chat
+          {t("start")}
         </h2>
         <div className="grid gap-2 sm:grid-cols-2">
           {((bots ?? []) as Bot[])

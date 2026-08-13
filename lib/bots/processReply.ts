@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildBotPrompt } from "@/lib/groq/buildBotPrompt";
-import { runGroqChatCompletion } from "@/lib/groq/client";
+import { runLlmCompletion } from "@/lib/llm/complete";
 import type { Bot, PostWithAuthor } from "@/lib/types/database";
 
 export async function processBotReplyJob(jobId: string) {
@@ -29,8 +29,8 @@ export async function processBotReplyJob(jobId: string) {
       .order("created_at", { ascending: true });
 
     const messages = buildBotPrompt(bot, targetPost, (threadPosts ?? []) as PostWithAuthor[]);
-    const model = job.trigger === "mention" ? "advanced" : "default";
-    const { reply } = await runGroqChatCompletion(messages, model);
+    const jobType = job.trigger === "mention" ? "feed_mention" : "feed_auto";
+    const { reply } = await runLlmCompletion(jobType, messages);
 
     if (!reply) throw new Error("Empty bot reply");
 

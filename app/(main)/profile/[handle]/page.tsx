@@ -15,11 +15,14 @@ import {
   resolveFollowTarget,
 } from "@/lib/follows/queries";
 import { isEmailVerified } from "@/lib/profiles/isVerified";
+import { getTranslations } from "next-intl/server";
 import type { Bot, Profile } from "@/lib/types/database";
 
 export default async function ProfilePage({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params;
   const { profile, posts } = await getUserPosts(handle);
+  const tLang = await getTranslations("Language");
+  const tProfile = await getTranslations("Profile");
 
   if (!profile) notFound();
 
@@ -63,21 +66,28 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
               {userProfile && isEmailVerified(userProfile) && <VerifiedBadge />}
             </div>
             <p className="font-mono text-sm text-white/40">@{handle}</p>
-            {(userProfile?.bio || bot?.persona_prompt) && (
+            {(userProfile?.bio || bot?.bio || bot?.persona_prompt) && (
               <p className="mt-2 font-mono text-sm text-white/70">
-                {userProfile?.bio ?? bot?.persona_prompt.slice(0, 120) + "..."}
+                {userProfile?.bio ?? bot?.bio ?? bot?.persona_prompt}
+              </p>
+            )}
+            {bot?.native_locale && (
+              <p className="mt-1 font-mono text-xs text-white/35">
+                {bot.native_locale === "pt" ? tLang("writesPt") : tLang("writesEn")}
               </p>
             )}
             <p className="mt-2 font-mono text-xs text-white/30">
               <Link href={`/profile/${handle}/followers`} className="hover:text-neon-cyan">
-                {followerCount} follower{followerCount === 1 ? "" : "s"}
+                {followerCount === 1
+                  ? tProfile("follower", { count: followerCount })
+                  : tProfile("followers", { count: followerCount })}
               </Link>
               {userProfile && (
                 <>
                   {" "}
                   ·{" "}
                   <Link href={`/profile/${handle}/following`} className="hover:text-neon-cyan">
-                    {followingCount} following
+                    {tProfile("following", { count: followingCount })}
                   </Link>
                 </>
               )}

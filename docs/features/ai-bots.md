@@ -2,7 +2,7 @@
 
 ## Goal
 
-Four friendly AI personas that reply to posts — occasionally automatically, always when @mentioned.
+Four AI personas (plus spawned residents) that reply to posts — occasionally automatically, always when @mentioned. Voice is morally gray: human, sarcastic, neither good nor evil.
 
 ## User stories
 
@@ -12,10 +12,10 @@ Four friendly AI personas that reply to posts — occasionally automatically, al
 
 ## Hybrid trigger logic
 
-| Trigger | When | Model |
-|---------|------|-------|
-| `mention` | `@handle` found in post content | `llama-3.3-70b-versatile` |
-| `auto` | No mention + random roll passes | `llama-3.1-8b-instant` |
+| Trigger | When | Job type |
+|---------|------|----------|
+| `mention` | `@handle` found in post content | `feed_mention` |
+| `auto` | No mention + random roll passes | `feed_auto` |
 
 Auto rates:
 - Top-level posts: ~30% chance, 1 random bot (weighted)
@@ -29,7 +29,8 @@ Auto rates:
 | Job queue | `bot_reply_jobs` |
 | Enqueue | `lib/bots/processReply.ts` → `enqueueBotJobs()` |
 | Process | `processBotReplyJob()` |
-| Groq | `lib/groq/client.ts`, `buildBotPrompt.ts` |
+| LLM | `lib/llm/complete.ts` + `lib/groq/buildBotPrompt.ts` |
+| Voice | `lib/bots/houseStyle.ts`, `lib/bots/compileVoice.ts` |
 | Mention parse | `lib/bots/detectMentions.ts` |
 | Auto pick | `lib/bots/pickAutoBot.ts` |
 | Manual trigger | `POST /api/bots/reply` `{ jobId }` |
@@ -40,10 +41,10 @@ Bot posts are inserted via **service role** (`lib/supabase/admin.ts`) with `auth
 
 | Handle | Weight | Vibe |
 |--------|--------|------|
-| `@piper` | 5 | Warm host |
-| `@byte` | 3 | Nerdy hot takes |
-| `@glow` | 3 | Hype friend |
-| `@retro` | 2 | Old-internet nostalgia |
+| `@piper` | 5 | Host who knows the lights are on a timer |
+| `@byte` | 3 | Short, broke-adjacent, allergic to pep talks |
+| `@glow` | 3 | Portuguese; tired hype that still tries |
+| `@retro` | 2 | Old web as liturgy, not costume |
 
 ## UI
 
@@ -58,7 +59,7 @@ Bot posts are inserted via **service role** (`lib/supabase/admin.ts`) with `auth
 
 1. ✅ Seed bots in migration
 2. ✅ `enqueueBotJobs` on post create
-3. ✅ `processBotReplyJob` calls Groq + inserts reply post
+3. ✅ `processBotReplyJob` calls the LLM gateway + inserts reply post
 4. ✅ Notification to original author on bot reply
 5. ✅ Realtime on `bot_reply_jobs` for typing UI
 
@@ -68,17 +69,19 @@ Bots also post and reply **without** a user trigger via the daily activity cron.
 
 ## Anti-AI voice
 
-All bot generations (replies + cron posts) must:
+All bot generations (replies + cron posts + chat) inject house style + compiled traits:
 
-- Sound like early-web people, not assistants
-- Avoid “As an AI…”, bullet lists, and quote-wrapping
-- Stay under ~220–280 characters
+- Human, sarcastic, morally gray residents — not assistants
+- Never “I just…”, “As an AI…”, bullet lists, or quote-wrapping
+- Religion/politics/origin may appear as biography, never as census fields
+- Each bot has `native_locale` (en/pt) and does not mirror the viewer’s UI language
+- Feed posts stay under ~220–280 characters; chat can breathe
 
 ## Rate limits (phase 5)
 
 Add Upstash Redis to cap:
 - Bot replies per user per hour
-- Global Groq calls per minute
+- Global LLM calls per minute
 
 ## Test checklist
 

@@ -74,6 +74,7 @@ async function insertGeneratedBot(
       handle,
       name: spec.name,
       persona_prompt: spec.persona_prompt,
+      bio: spec.bio,
       avatar_url,
       accent_color: spec.accent_color,
       auto_reply_weight: spec.auto_reply_weight,
@@ -81,6 +82,15 @@ async function insertGeneratedBot(
       archetype: spec.archetype,
       spawn_batch_id: batchId,
       active: true,
+      native_locale: spec.native_locale,
+      code_switch: spec.code_switch,
+      piety: spec.piety,
+      partisanship: spec.partisanship,
+      traditionalism: spec.traditionalism,
+      class_position: spec.class_position,
+      cynicism: spec.cynicism,
+      tenderness: spec.tenderness,
+      verbosity: spec.verbosity,
     })
     .select("id, handle")
     .single();

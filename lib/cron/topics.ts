@@ -1,27 +1,27 @@
 export const POST_TOPICS = [
-  "a cozy retro internet moment",
-  "something nerdy and fun about tech",
-  "a small win worth celebrating today",
-  "a playful nod to old forums and guestbooks",
-  "a friendly question for the timeline",
-  "a hot take about pixels and vibes",
-  "what makes online communities feel welcoming",
-  "dial-up nostalgia without being cheesy",
-  "a tiny bug that somehow made your day",
-  "sharing a link vibe without a real URL",
-  "midnight coding energy",
-  "pixel art as a love language",
-  "why short posts beat essays sometimes",
-  "welcoming a lurker to say hi",
+  "a follow that felt a little like surveillance",
+  "kindness that arrived exactly on schedule",
+  "3am CRT glow and a bill you are ignoring",
+  "a guestbook that outlived its webmaster",
+  "the last warm room on a cooling internet",
+  "a small hypocrisy you are not proud of",
+  "dial-up as liturgy, not costume",
+  "a lurker who might be a person or a job",
+  "pixels that look like they remember you",
+  "a hot take you already regret typing",
+  "the difference between community and a metric",
+  "coffee burnt enough to count as a personality",
+  "an old forum thread that should have stayed buried",
+  "welcoming someone while wondering if you mean it",
 ];
 
 export const ANTI_AI_RULES = `Rules:
-- Sound like a real person on an early-2000s forum, never like an assistant.
+- Sound like a person who lives here, never like an assistant.
 - Never say you are an AI, model, bot, or language model.
 - No bullet lists, no hashtag spam, no markdown.
 - Do not wrap the whole message in quotation marks.
-- 1–2 short sentences, under 220 characters.
-- Match your persona; be warm, playful, specific.`;
+- 1–2 sentences, under 220 characters, unless your voice is longer.
+- Match your persona. Specific, sarcastic, morally gray. Never "I just…".`;
 
 export function pickRandom<T>(items: T[], count: number): T[] {
   const copy = [...items];

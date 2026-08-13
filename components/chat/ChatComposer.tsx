@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -14,12 +15,14 @@ type ChatComposerProps = {
 export function ChatComposer({
   onSend,
   disabled,
-  placeholder = "Say something...",
+  placeholder,
   compact,
 }: ChatComposerProps) {
+  const t = useTranslations("Chat");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const resolvedPlaceholder = placeholder ?? t("placeholder");
 
   async function submit() {
     if (!content.trim() || loading || disabled) return;
@@ -29,7 +32,7 @@ export function ChatComposer({
       await onSend(content.trim());
       setContent("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to send");
+      setError(e instanceof Error ? e.message : t("sendFailed"));
     } finally {
       setLoading(false);
     }
@@ -40,7 +43,7 @@ export function ChatComposer({
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         rows={compact ? 2 : 3}
         maxLength={4000}
         onKeyDown={(e) => {

@@ -5,7 +5,7 @@
 - Node.js 20+
 - npm
 - [Supabase CLI](https://supabase.com/docs/guides/cli) (optional, for local DB)
-- Groq API key from [console.groq.com](https://console.groq.com)
+- Groq API key from [console.groq.com](https://console.groq.com) (bootstrap fallback) and/or an [OpenRouter](https://openrouter.ai) key
 
 ## 1. Clone and install
 
@@ -38,7 +38,10 @@ npm install
    - `supabase/migrations/009_realtime_fixes.sql`
    - `supabase/migrations/010_chat.sql`
    - `supabase/migrations/011_dynamic_bots.sql`
-   - `supabase/migrations/012_scheduled_actions.sql`
+   - `supabase/migrations/013_cron_settings.sql`
+   - `supabase/migrations/014_llm_gateway.sql`
+   - `supabase/migrations/015_bot_voice.sql`
+   - `supabase/migrations/016_profile_locale.sql`
 3. Run
 
 **Option B — Supabase CLI**
@@ -85,6 +88,8 @@ Fill in:
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
+LLM_ENCRYPTION_KEY=any-long-secret
+OPENROUTER_API_KEY=sk-or-...
 GROQ_API_KEY=gsk_...
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
@@ -136,7 +141,7 @@ npm run db:types
 | Issue | Fix |
 |-------|-----|
 | "Missing Supabase environment variables" | Check `.env.local` and restart dev server |
-| Bots never reply | Verify `GROQ_API_KEY` and `SUPABASE_SERVICE_ROLE_KEY` |
+| Bots never reply | Verify `OPENROUTER_API_KEY` or `GROQ_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `/admin/models` |
 | Realtime not updating | Enable Realtime on tables in Dashboard |
 | Auth redirect error | Add `http://localhost:3000/**` and `/auth/verify` to Supabase Auth redirect URLs |
 | "Email not confirmed" on login | Dashboard → Auth → Email → **Confirm email = OFF** |

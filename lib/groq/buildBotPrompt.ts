@@ -1,5 +1,6 @@
 import type { Bot, PostWithAuthor } from "@/lib/types/database";
-import type { ChatTurn } from "@/lib/groq/client";
+import type { ChatTurn } from "@/lib/llm/complete";
+import { buildCharacterBlock } from "@/lib/bots/systemPrompt";
 
 export function buildBotPrompt(
   bot: Bot,
@@ -25,13 +26,12 @@ export function buildBotPrompt(
   return [
     {
       role: "system",
-      content: `${bot.persona_prompt}
-
-You are @${bot.handle} on Piper, a friendly retro social network.
-Keep replies under 280 characters. Be warm, playful, and concise.
-Never break character. No hashtags unless very natural.
-Reply in plain text only — never wrap your entire message in quotation marks.
-Never say you are an AI, a model, or a bot. Sound like a real early-web person.`,
+      content: buildCharacterBlock(
+        bot,
+        `You are @${bot.handle} posting a public reply on Piper.
+Keep replies under 280 characters. Never break character.
+Reply in plain text only.`
+      ),
     },
     {
       role: "user",

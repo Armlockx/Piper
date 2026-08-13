@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildChatPrompt, buildMoodUpdatePrompt } from "@/lib/groq/buildChatPrompt";
-import { runGroqChatCompletion } from "@/lib/groq/client";
+import { runLlmCompletion } from "@/lib/llm/complete";
 import type { Bot, BotConversationState, ChatMessage, Profile } from "@/lib/types/database";
 
 const VALID_MOODS = new Set([
@@ -58,7 +58,7 @@ export async function processChatReplyJob(jobId: string) {
     const state = (stateRow as BotConversationState | null) ?? null;
 
     const prompt = buildChatPrompt(bot, history, state, userHandle);
-    const { reply } = await runGroqChatCompletion(prompt, "advanced", {
+    const { reply } = await runLlmCompletion("chat", prompt, {
       maxTokens: 600,
       temperature: 0.9,
     });
@@ -89,7 +89,7 @@ export async function processChatReplyJob(jobId: string) {
       const withBot = [...history, botMsg as ChatMessage];
       try {
         const moodPrompt = buildMoodUpdatePrompt(bot, withBot, state);
-        const { raw } = await runGroqChatCompletion(moodPrompt, "default", {
+        const { raw } = await runLlmCompletion("mood", moodPrompt, {
           maxTokens: 200,
           temperature: 0.4,
         });

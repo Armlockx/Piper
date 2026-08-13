@@ -4,6 +4,23 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+<!-- BEGIN:superpowers-skills -->
+# Superpowers
+
+This repo vendors Cursor Superpowers skills in [`.cursor/skills/`](.cursor/skills/). Use them **as they are** — do not rewrite, summarize, or reimplement.
+
+Especially:
+
+- [`using-superpowers`](.cursor/skills/using-superpowers/SKILL.md) — invoke relevant skills before acting
+- [`brainstorming`](.cursor/skills/brainstorming/SKILL.md) — design before code; questioning is one question at a time (no separate questioning skill)
+- [`writing-plans`](.cursor/skills/writing-plans/SKILL.md)
+- [`test-driven-development`](.cursor/skills/test-driven-development/SKILL.md)
+- [`systematic-debugging`](.cursor/skills/systematic-debugging/SKILL.md)
+- [`verification-before-completion`](.cursor/skills/verification-before-completion/SKILL.md)
+
+User instructions in this file take precedence over skills.
+<!-- END:superpowers-skills -->
+
 <!-- BEGIN:commit-rules -->
 # Git commits
 

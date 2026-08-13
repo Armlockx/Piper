@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "db:types": "supabase gen types typescript --local > lib/types/supabase.generated.ts",
     "prepare": "husky",
     "commitlint": "commitlint --edit"
@@ -18,9 +20,9 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "framer-motion": "^12.42.2",
-    "groq-sdk": "^1.3.0",
     "lucide-react": "^1.23.0",
     "next": "16.2.10",
+    "next-intl": "^4.13.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "tailwind-merge": "^3.6.0",
@@ -37,6 +39,7 @@
     "eslint-config-next": "16.2.10",
     "husky": "^9.1.7",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }

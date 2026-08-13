@@ -1,27 +1,29 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { runGroqChatCompletion } from "@/lib/groq/client";
-import { sanitizeBotReply } from "@/lib/groq/sanitizeReply";
+import { runLlmCompletion } from "@/lib/llm/complete";
+import { sanitizeBotReply } from "@/lib/llm/sanitizeReply";
+import { buildCharacterBlock } from "@/lib/bots/systemPrompt";
 import type { Bot } from "@/lib/types/database";
 import { ANTI_AI_RULES, POST_TOPICS, pickRandom, randInt } from "@/lib/cron/topics";
 
 async function generateBotPost(bot: Bot): Promise<string> {
   const topic = POST_TOPICS[Math.floor(Math.random() * POST_TOPICS.length)];
 
-  const { reply } = await runGroqChatCompletion(
+  const { reply } = await runLlmCompletion(
+    "cron_post",
     [
       {
         role: "system",
-        content: `${bot.persona_prompt}
-
-You are @${bot.handle} posting on Piper, a retro social network.
-${ANTI_AI_RULES}`,
+        content: `${buildCharacterBlock(
+          bot,
+          `You are @${bot.handle} posting on Piper.
+${ANTI_AI_RULES}`
+        )}`,
       },
       {
         role: "user",
         content: `Write one original timeline post about: ${topic}. Output only the post text.`,
       },
-    ],
-    Math.random() > 0.6 ? "advanced" : "default"
+    ]
   );
 
   return sanitizeBotReply(reply).slice(0, 280);

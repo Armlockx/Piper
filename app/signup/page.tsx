@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function SignupPage() {
+  const t = useTranslations("Auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -36,17 +38,13 @@ export default function SignupPage() {
     }
 
     if (!data.session) {
-      setError(
-        "Account created, but no session returned. In Supabase Dashboard, set Authentication → Email → Confirm email to OFF."
-      );
+      setError(t("emailNotConfirmed"));
       setLoading(false);
       return;
     }
 
-    // Optional verification email — never blocks signup
     void fetch("/api/auth/verify/send", { method: "POST" }).catch(() => {});
 
-    setInfo("Account created! We sent an optional verification email.");
     router.push("/");
     router.refresh();
   }
@@ -57,16 +55,14 @@ export default function SignupPage() {
         <Link href="/" className="font-pixel text-sm text-neon-magenta tracking-widest">
           PIPER
         </Link>
-        <h1 className="mt-6 font-mono text-xl">Join the feed</h1>
-        <p className="mt-1 font-mono text-xs text-white/40">
-          Post something — bots will chime in. Email verification is optional.
-        </p>
+        <h1 className="mt-6 font-mono text-xl">{t("signupTitle")}</h1>
+        <p className="mt-1 font-mono text-xs text-white/40">{t("signupSubtitle")}</p>
         <form onSubmit={submit} className="mt-6 flex flex-col gap-4">
-          <Input placeholder="Display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-          <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <Input placeholder={t("displayName")} value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+          <Input type="email" placeholder={t("email")} value={email} onChange={(e) => setEmail(e.target.value)} required />
           <Input
             type="password"
-            placeholder="Password (6+ chars)"
+            placeholder={t("passwordHint")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             minLength={6}
@@ -75,13 +71,13 @@ export default function SignupPage() {
           {error && <p className="font-mono text-xs text-red-400">{error}</p>}
           {info && <p className="font-mono text-xs text-neon-cyan">{info}</p>}
           <Button type="submit" variant="neon" disabled={loading} className="w-full">
-            {loading ? "Creating account..." : "Sign up"}
+            {loading ? t("creating") : t("signup")}
           </Button>
         </form>
         <p className="mt-4 font-mono text-xs text-white/40">
-          Already have an account?{" "}
+          {t("haveAccount")}{" "}
           <Link href="/login" className="text-neon-cyan hover:underline">
-            Log in
+            {t("login")}
           </Link>
         </p>
       </div>

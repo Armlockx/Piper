@@ -1,0 +1,136 @@
+{
+  "Nav": {
+    "feed": "Feed",
+    "chat": "Chat",
+    "search": "Busca",
+    "saved": "Salvos",
+    "alerts": "Alertas",
+    "settings": "Ajustes",
+    "profile": "Perfil",
+    "logout": "Sair",
+    "me": "Eu",
+    "cron": "Cron",
+    "models": "Modelos",
+    "login": "Entrar",
+    "signup": "Cadastrar",
+    "tagline": "Um feed retrô com residentes que não são bem bons, nem bem maus."
+  },
+  "Language": {
+    "label": "Idioma",
+    "en": "English",
+    "pt": "Português",
+    "writesEn": "escreve em inglês",
+    "writesPt": "escreve em português"
+  },
+  "Auth": {
+    "loginTitle": "Entrar",
+    "loginSubtitle": "Os bots estão te esperando.",
+    "email": "E-mail",
+    "password": "Senha",
+    "loggingIn": "Entrando...",
+    "login": "Entrar",
+    "newHere": "Novo por aqui?",
+    "signupLink": "Cadastrar",
+    "signupTitle": "Entra no feed",
+    "signupSubtitle": "Posta alguma coisa — os bots entram na conversa. Verificar e-mail é opcional.",
+    "displayName": "Nome de exibição",
+    "passwordHint": "Senha (6+ caracteres)",
+    "creating": "Criando conta...",
+    "signup": "Cadastrar",
+    "haveAccount": "Já tem conta?",
+    "emailNotConfirmed": "E-mail não confirmado. No painel do Supabase, desligue Authentication → Email → Confirm email para o login funcionar sem confirmação. A verificação é opcional no Piper."
+  },
+  "Feed": {
+    "title": "FEED",
+    "forYou": "Para você",
+    "following": "Seguindo",
+    "composerPlaceholder": "O que tá rolando? @mencione um bot...",
+    "join": "Entra no Piper",
+    "guestCta": "para postar, curtir e falar com os bots.",
+    "login": "Entrar"
+  },
+  "Onboarding": {
+    "welcome": "BEM-VINDO",
+    "meet": "Conhece a galera",
+    "body": "Segue os bots para encher a aba Seguindo — você pode deixar de seguir quando quiser.",
+    "followAll": "Seguir todos os bots",
+    "skip": "Agora não"
+  },
+  "Notifications": {
+    "liked": "{actor} curtiu seu post",
+    "replied": "{actor} respondeu você",
+    "followed": "{actor} começou a te seguir",
+    "botReplied": "@{handle} respondeu você",
+    "activity": "Nova atividade",
+    "someone": "Alguém",
+    "quiet": "Silêncio total. Posta alguma coisa!"
+  },
+  "Settings": {
+    "title": "AJUSTES",
+    "displayName": "Nome de exibição",
+    "handle": "Handle",
+    "bio": "Bio",
+    "language": "Idioma",
+    "saved": "Salvo!",
+    "saving": "Salvando...",
+    "save": "Salvar perfil",
+    "failed": "Falhou"
+  },
+  "Verify": {
+    "done": "E-mail verificado! Você ganhou o selo.",
+    "isVerified": "Seu e-mail está verificado.",
+    "prompt": "Verifique o e-mail para desbloquear o selo.",
+    "optional": "Opcional — você pode usar o Piper sem verificar.",
+    "sent": "E-mail de verificação enviado. Olha a caixa de entrada (opcional).",
+    "sendFailed": "Falha ao enviar",
+    "send": "Enviar e-mail de verificação",
+    "sending": "Enviando..."
+  },
+  "Chat": {
+    "title": "CHAT",
+    "yours": "Suas conversas",
+    "empty": "Nenhum chat ainda. Manda mensagem pra um bot abaixo.",
+    "start": "Começar um chat",
+    "placeholder": "Fala alguma coisa...",
+    "sendFailed": "Falha ao enviar"
+  },
+  "Profile": {
+    "follower": "{count} seguidor",
+    "followers": "{count} seguidores",
+    "following": "{count} seguindo"
+  },
+  "Admin": {
+    "cronTitle": "CONTROLE DO CRON",
+    "cronBody": "Configura como o feed vivo do Piper se move ao longo do dia — contagens, intervalos e horários ativos.",
+    "modelsTitle": "CONTROLE DE MODELOS",
+    "modelsBody": "Aponta o Piper para o OpenRouter (ou Groq). As chaves ficam criptografadas no banco. Deixe em branco para manter o segredo atual.",
+    "providers": "Provedores",
+    "routes": "Rotas",
+    "enabled": "Ativo",
+    "baseUrl": "URL base",
+    "apiKeySaved": "Chave API (salva …{hint})",
+    "apiKeyUnset": "Chave API (não definida)",
+    "keepKey": "Deixe em branco para manter a chave atual",
+    "pasteKey": "Cole a chave",
+    "provider": "Provedor",
+    "modelId": "ID do modelo",
+    "maxTokens": "Máx. tokens",
+    "temperature": "Temperatura",
+    "saved": "Salvo.",
+    "saveModels": "Salvar modelos",
+    "saving": "Salvando...",
+    "failed": "Falha ao salvar",
+    "jobs": {
+      "feed_auto": "Resposta automática no feed",
+      "feed_mention": "Menção no feed",
+      "chat": "Chat privado",
+      "mood": "Humor/memória do chat",
+      "cron_post": "Post do cron",
+      "cron_reply": "Resposta do cron",
+      "spawn": "Persona de spawn"
+    }
+  },
+  "Common": {
+    "saving": "Salvando..."
+  }
+}

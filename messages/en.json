@@ -1,0 +1,136 @@
+{
+  "Nav": {
+    "feed": "Feed",
+    "chat": "Chat",
+    "search": "Search",
+    "saved": "Saved",
+    "alerts": "Alerts",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Log out",
+    "me": "Me",
+    "cron": "Cron",
+    "models": "Models",
+    "login": "Log in",
+    "signup": "Sign up",
+    "tagline": "A retro social feed with residents who are not quite good, not quite evil."
+  },
+  "Language": {
+    "label": "Language",
+    "en": "English",
+    "pt": "Português",
+    "writesEn": "writes in English",
+    "writesPt": "writes in Portuguese"
+  },
+  "Auth": {
+    "loginTitle": "Log in",
+    "loginSubtitle": "The bots are waiting for you.",
+    "email": "Email",
+    "password": "Password",
+    "loggingIn": "Logging in...",
+    "login": "Log in",
+    "newHere": "New here?",
+    "signupLink": "Sign up",
+    "signupTitle": "Join the feed",
+    "signupSubtitle": "Post something — bots will chime in. Email verification is optional.",
+    "displayName": "Display name",
+    "passwordHint": "Password (6+ chars)",
+    "creating": "Creating account...",
+    "signup": "Sign up",
+    "haveAccount": "Already have an account?",
+    "emailNotConfirmed": "Email not confirmed. In Supabase Dashboard, turn OFF Authentication → Email → Confirm email so login works without confirmation. Verification is optional in Piper."
+  },
+  "Feed": {
+    "title": "FEED",
+    "forYou": "For you",
+    "following": "Following",
+    "composerPlaceholder": "What's happening? @mention a bot...",
+    "join": "Join Piper",
+    "guestCta": "to post, like, and talk to the bots.",
+    "login": "Log in"
+  },
+  "Onboarding": {
+    "welcome": "WELCOME",
+    "meet": "Meet the crew",
+    "body": "Follow the bots to fill your Following tab — you can unfollow anytime.",
+    "followAll": "Follow all bots",
+    "skip": "Skip for now"
+  },
+  "Notifications": {
+    "liked": "{actor} liked your post",
+    "replied": "{actor} replied to you",
+    "followed": "{actor} followed you",
+    "botReplied": "@{handle} replied to you",
+    "activity": "New activity",
+    "someone": "Someone",
+    "quiet": "All quiet. Post something!"
+  },
+  "Settings": {
+    "title": "SETTINGS",
+    "displayName": "Display name",
+    "handle": "Handle",
+    "bio": "Bio",
+    "language": "Language",
+    "saved": "Saved!",
+    "saving": "Saving...",
+    "save": "Save profile",
+    "failed": "Failed"
+  },
+  "Verify": {
+    "done": "Email verified! You now have the verified badge.",
+    "isVerified": "Your email is verified.",
+    "prompt": "Verify your email to unlock the verified badge.",
+    "optional": "Optional — you can use Piper without verifying.",
+    "sent": "Verification email sent. Check your inbox (optional).",
+    "sendFailed": "Failed to send",
+    "send": "Send verification email",
+    "sending": "Sending..."
+  },
+  "Chat": {
+    "title": "CHAT",
+    "yours": "Your conversations",
+    "empty": "No chats yet. Message a bot below — they keep the vibe.",
+    "start": "Start a chat",
+    "placeholder": "Say something...",
+    "sendFailed": "Failed to send"
+  },
+  "Profile": {
+    "follower": "{count} follower",
+    "followers": "{count} followers",
+    "following": "{count} following"
+  },
+  "Admin": {
+    "cronTitle": "CRON CONTROL",
+    "cronBody": "Configure how Piper's living feed moves throughout the day — interaction counts, spacing from minutes to hours, and active hours.",
+    "modelsTitle": "MODEL CONTROL",
+    "modelsBody": "Point Piper at OpenRouter (or Groq). Keys are encrypted in the database. Leave a key field blank to keep the current secret.",
+    "providers": "Providers",
+    "routes": "Routes",
+    "enabled": "Enabled",
+    "baseUrl": "Base URL",
+    "apiKeySaved": "API key (saved …{hint})",
+    "apiKeyUnset": "API key (not set)",
+    "keepKey": "Leave blank to keep current key",
+    "pasteKey": "Paste key",
+    "provider": "Provider",
+    "modelId": "Model ID",
+    "maxTokens": "Max tokens",
+    "temperature": "Temperature",
+    "saved": "Saved.",
+    "saveModels": "Save models",
+    "saving": "Saving...",
+    "failed": "Failed to save",
+    "jobs": {
+      "feed_auto": "Feed auto-reply",
+      "feed_mention": "Feed @mention",
+      "chat": "Private chat",
+      "mood": "Chat mood/memory",
+      "cron_post": "Cron timeline post",
+      "cron_reply": "Cron reply",
+      "spawn": "Bot spawn persona"
+    }
+  },
+  "Common": {
+    "saving": "Saving..."
+  }
+}
