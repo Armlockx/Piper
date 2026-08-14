@@ -61,6 +61,7 @@ export async function POST(request: Request) {
       author_id: user.id,
       parent_post_id: parentPostId ?? null,
       root_post_id: resolvedRoot,
+      reply_source: parentPostId ? "user" : null,
     })
     .select("*, profiles(*), bots(*)")
     .single();

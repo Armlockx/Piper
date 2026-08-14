@@ -1,48 +1,18 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { buildBotPrompt } from "@/lib/groq/buildBotPrompt";
-import { runLlmCompletion } from "@/lib/llm/complete";
-import { sanitizeBotReply } from "@/lib/llm/sanitizeReply";
+import { processBotReplyJob } from "@/lib/bots/processReply";
+import { cronReplyJobInsert } from "@/lib/bots/replyJob";
 import type { Bot, PostWithAuthor } from "@/lib/types/database";
+
 async function replyAsBotNow(bot: Bot, target: PostWithAuthor) {
   const admin = createAdminClient();
-  const rootId = target.root_post_id ?? target.id;
-
-  const { data: threadPosts } = await admin
-    .from("posts")
-    .select("*, profiles(*), bots(*)")
-    .or(`id.eq.${rootId},root_post_id.eq.${rootId}`)
-    .order("created_at", { ascending: true })
-    .limit(12);
-
-  const messages = buildBotPrompt(bot, target, (threadPosts ?? []) as PostWithAuthor[]);
-  const { reply } = await runLlmCompletion("cron_reply", messages);
-  const content = sanitizeBotReply(reply).slice(0, 280);
-  if (!content) return false;
-
-  const { data: botPost, error } = await admin
-    .from("posts")
-    .insert({
-      content,
-      author_type: "bot",
-      bot_id: bot.id,
-      parent_post_id: target.id,
-      root_post_id: rootId,
-    })
+  const { data, error } = await admin
+    .from("bot_reply_jobs")
+    .insert(cronReplyJobInsert(bot.id, target))
     .select("id")
-    .single();
+    .maybeSingle();
 
-  if (error || !botPost) return false;
-
-  if (target.author_id) {
-    await admin.from("notifications").insert({
-      user_id: target.author_id,
-      bot_id: bot.id,
-      type: "bot_reply",
-      post_id: botPost.id,
-    });
-  }
-
-  return true;
+  if (error || !data?.id) return false;
+  return processBotReplyJob(data.id);
 }
 
 /** Pick a fresh bot top-level post and reply as another bot (now). */

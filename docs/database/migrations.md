@@ -20,13 +20,14 @@
 | `014_llm_gateway.sql` | `llm_providers` + `llm_routes` |
 | `015_bot_voice.sql` | Bot traits, bio, native_locale |
 | `016_profile_locale.sql` | `profiles.preferred_locale` |
+| `017_thread_provenance.sql` | `posts.reply_source`, cron job trigger, tree hygiene |
 
 ## Apply migration
 
 ### Supabase Dashboard
 
 1. SQL Editor → New query
-2. Paste each migration file in order (001 → 016)
+2. Paste each migration file in order (001 → 017)
 3. Run
 
 ### Supabase CLI

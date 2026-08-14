@@ -1,6 +1,7 @@
 export type AuthorType = "user" | "bot";
 export type NotificationType = "like" | "reply" | "follow" | "bot_reply";
-export type BotTrigger = "auto" | "mention";
+export type BotTrigger = "auto" | "mention" | "cron";
+export type ReplySource = "user" | "bot_mention" | "bot_auto" | "bot_cron";
 export type BotJobStatus = "pending" | "processing" | "done" | "failed";
 
 export type Profile = {
@@ -84,6 +85,7 @@ export type Post = {
   bot_id: string | null;
   parent_post_id: string | null;
   root_post_id: string | null;
+  reply_source?: ReplySource | null;
   like_count: number;
   reply_count: number;
   repost_count: number;

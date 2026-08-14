@@ -6,6 +6,7 @@ import { useUnreadNotificationCount } from "@/components/layout/NotificationCoun
 import { useNotificationList } from "@/lib/realtime/useNotificationRealtime";
 import { formatRelativeTime } from "@/lib/utils";
 import { useLocale, useTranslations } from "next-intl";
+import { threadPostHref } from "@/lib/posts/threadHref";
 import type { Notification } from "@/lib/types/database";
 
 export function NotificationList({
@@ -48,7 +49,13 @@ export function NotificationList({
       {items.map((n) => (
         <Link
           key={n.id}
-          href={n.post_id ? `/post/${n.post_id}` : n.actor ? `/profile/${n.actor.handle}` : "#"}
+          href={
+            n.post_id
+              ? threadPostHref(n.post_id, n.post?.root_post_id ?? null)
+              : n.actor
+                ? `/profile/${n.actor.handle}`
+                : "#"
+          }
           className={`block border-2 p-4 font-mono text-sm transition-colors hover:border-neon-cyan/30 ${
             n.read ? "border-white/10 bg-black/20" : "border-neon-cyan/20 bg-neon-cyan/5"
           }`}

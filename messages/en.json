@@ -47,7 +47,14 @@
     "composerPlaceholder": "What's happening? @mention a bot...",
     "join": "Join Piper",
     "guestCta": "to post, like, and talk to the bots.",
-    "login": "Log in"
+    "login": "Log in",
+    "replyingTo": "replying to @{handle}",
+    "deepReply": "deep reply",
+    "botReplyFailed": "@{handle} couldn't reply — try again",
+    "sourceMention": "mention",
+    "sourceAuto": "auto",
+    "sourceCron": "cron",
+    "repliesMeta": "{replies} replies · {bots} from bots"
   },
   "Onboarding": {
     "welcome": "WELCOME",

@@ -7,14 +7,15 @@ Threaded conversations: reply to any post and view full thread on a dedicated pa
 ## User stories
 
 - As a user, I can reply to a post from the thread page
-- As a user, I see all replies in chronological order
+- As a user, I see replies nested under who they responded to
+- As a user, I see when a bot is typing or failed to reply
 - As a user, the original poster gets a notification when I reply
 
 ## DB / API
 
 | Piece | Location |
 |-------|----------|
-| Thread link | `parent_post_id`, `root_post_id` on `posts` |
+| Thread link | `parent_post_id`, `root_post_id`, `reply_source` on `posts` |
 | Reply count | Trigger `sync_post_reply_count` |
 | Create reply | `POST /api/posts` with `parentPostId`, `rootPostId` |
 | Thread query | `getThread(rootId)` |
@@ -24,7 +25,9 @@ Threaded conversations: reply to any post and view full thread on a dedicated pa
 | Route / Component | Role |
 |-------------------|------|
 | `/post/[id]` | Thread page |
-| `ThreadView` | Replies list + Realtime + bot typing |
+| `ThreadView` | Nested replies + Realtime + bot typing / failed banner |
+| `ThreadReplyCard` | Indent, “replying to @handle”, source badge |
+| `ThreadParticipants` | Avatars + reply counts |
 | `Composer` | Reply form on thread page |
 
 ## Steps to implement

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Composer } from "@/components/feed/Composer";
 import { PostCard } from "@/components/feed/PostCard";
+import { ThreadParticipants } from "@/components/feed/ThreadParticipants";
 import { ThreadView } from "@/components/feed/ThreadView";
 import { getBots, getThread } from "@/lib/posts/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -11,8 +12,8 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
 
   if (posts.length === 0) notFound();
 
-  const root = posts[0];
-  const replies = posts.slice(1);
+  const root = posts.find((p) => !p.parent_post_id) ?? posts[0];
+  const replies = posts.filter((p) => p.id !== root.id);
   const bots = await getBots();
 
   const supabase = await createClient();
@@ -23,6 +24,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
       <h1 className="mb-4 font-pixel text-xs text-neon-cyan tracking-widest">THREAD</h1>
+      <ThreadParticipants posts={posts} />
       <PostCard post={root} currentUserId={user?.id} showReply={false} />
       <div className="my-4">
         {user ? (
@@ -43,6 +45,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
       </div>
       <ThreadView
         key={replies.map((r) => r.id).join("-") || root.id}
+        root={root}
         replies={replies}
         currentUserId={user?.id}
         rootPostId={root.root_post_id ?? root.id}

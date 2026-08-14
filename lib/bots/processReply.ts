@@ -1,9 +1,10 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildBotPrompt } from "@/lib/groq/buildBotPrompt";
 import { runLlmCompletion } from "@/lib/llm/complete";
-import type { Bot, PostWithAuthor } from "@/lib/types/database";
+import { llmJobTypeForTrigger, replySourceForTrigger } from "@/lib/bots/replyJob";
+import type { Bot, BotTrigger, PostWithAuthor } from "@/lib/types/database";
 
-export async function processBotReplyJob(jobId: string) {
+export async function processBotReplyJob(jobId: string): Promise<boolean> {
   const admin = createAdminClient();
 
   const { data: job, error: jobError } = await admin
@@ -13,13 +14,14 @@ export async function processBotReplyJob(jobId: string) {
     .eq("status", "pending")
     .single();
 
-  if (jobError || !job) return;
+  if (jobError || !job) return false;
 
   await admin.from("bot_reply_jobs").update({ status: "processing" }).eq("id", jobId);
 
   try {
     const targetPost = job.posts as PostWithAuthor;
     const bot = job.bots as Bot;
+    const trigger = job.trigger as BotTrigger;
     const rootId = targetPost.root_post_id ?? targetPost.id;
 
     const { data: threadPosts } = await admin
@@ -29,8 +31,7 @@ export async function processBotReplyJob(jobId: string) {
       .order("created_at", { ascending: true });
 
     const messages = buildBotPrompt(bot, targetPost, (threadPosts ?? []) as PostWithAuthor[]);
-    const jobType = job.trigger === "mention" ? "feed_mention" : "feed_auto";
-    const { reply } = await runLlmCompletion(jobType, messages);
+    const { reply } = await runLlmCompletion(llmJobTypeForTrigger(trigger), messages);
 
     if (!reply) throw new Error("Empty bot reply");
 
@@ -42,6 +43,7 @@ export async function processBotReplyJob(jobId: string) {
         bot_id: bot.id,
         parent_post_id: targetPost.id,
         root_post_id: rootId,
+        reply_source: replySourceForTrigger(trigger),
       })
       .select()
       .single();
@@ -61,6 +63,7 @@ export async function processBotReplyJob(jobId: string) {
       .from("bot_reply_jobs")
       .update({ status: "done", processed_at: new Date().toISOString() })
       .eq("id", jobId);
+    return true;
   } catch (e) {
     await admin
       .from("bot_reply_jobs")
@@ -70,6 +73,7 @@ export async function processBotReplyJob(jobId: string) {
         processed_at: new Date().toISOString(),
       })
       .eq("id", jobId);
+    return false;
   }
 }
 

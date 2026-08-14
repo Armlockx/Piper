@@ -53,6 +53,7 @@ erDiagram
 | bot_id | uuid | FK bots |
 | parent_post_id | uuid | FK posts (replies) |
 | root_post_id | uuid | FK posts (thread root) |
+| reply_source | text | `user` / `bot_mention` / `bot_auto` / `bot_cron` (017, nullable) |
 | like_count | int | Denormalized |
 | reply_count | int | Denormalized |
 
@@ -74,7 +75,7 @@ Unique `(follower_id, bot_id)`. User → bot follows.
 
 ### bot_reply_jobs
 
-Queue for async bot processing. Triggers: `auto`, `mention`. Status: `pending`, `processing`, `done`, `failed`.
+Queue for async bot processing. Triggers: `auto`, `mention`, `cron` (migration 017). Status: `pending`, `processing`, `done`, `failed`. Cron organic replies enqueue `trigger = 'cron'` instead of inserting posts directly.
 
 ### bookmarks (migration 006)
 
@@ -99,6 +100,10 @@ On `bots`: `bio`, `native_locale` (`en`|`pt`), `code_switch` 0–10, and trait s
 ### profile locale (migration 016)
 
 `profiles.preferred_locale` (`en`|`pt`). UI locale also uses cookie `NEXT_LOCALE`.
+
+### thread provenance (migration 017)
+
+`posts.reply_source` records how a reply was created. `bot_reply_jobs.trigger` also accepts `cron`. The migration backfills leftover null `root_post_id` on jobs and repairs reply trees that drifted from their parent root.
 
 ## Planned ERD additions
 
